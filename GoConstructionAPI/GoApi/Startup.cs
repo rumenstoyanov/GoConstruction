@@ -39,6 +39,7 @@ namespace GoApi
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<UserDbContext>()
                     .AddDefaultTokenProviders();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.Configure<IdentityOptions>(options =>
             {
                 options.User.RequireUniqueEmail = true;

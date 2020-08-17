@@ -8,6 +8,7 @@ namespace GoApi.Data.Constants
     public static class Seniority
     {
         public const string SeniorityClaimKey = "Seniority";
+        public const string OrganisationIdClaimKey = "oid";
 
         public const string Admin = "Admin";
         public const string Contractor = "Contractor";
@@ -20,5 +21,6 @@ namespace GoApi.Data.Constants
         public const string ManagerOrAbovePolicy = "ManagerOrAbove";
         public const string SupervisorOrAbovePolicy = "SupervisorOrAbove";
         public const string WorkerOrAbovePolicy = "WorkerOrAbove";
+        
     }
 }
