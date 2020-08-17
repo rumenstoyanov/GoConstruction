@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GoApi.Data;
+using GoApi.Data.Models;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static GoApi.Data.Constants.Seniority;
 
 namespace GoApi
 {
@@ -33,7 +35,7 @@ namespace GoApi
                 // Seed roles if not present
                 var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-                foreach (string role in new string[] { "Admin", "Contractor", "Manager", "Supervisor", "Worker" })
+                foreach (string role in new string[] { Admin, Contractor, Manager, Supervisor, Worker })
                 {
                     if (!await roleManager.RoleExistsAsync(role))
                     {
@@ -41,7 +43,6 @@ namespace GoApi
                         await roleManager.CreateAsync(idRole);
                     }
                 }
-
             }
 
             // Run

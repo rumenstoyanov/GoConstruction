@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using static GoApi.Data.Constants.Seniority;
 
 namespace GoApi
 {
@@ -69,10 +70,14 @@ namespace GoApi
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtSigningKey"]))
                     };
                 });
-            //services.AddAuthorization(options =>
-            //{
-            //    options.AddPolicy("ContractorsOnly", policy => policy.RequireClaim("Seniority", "Contractor"));
-            //});
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(AdminOnlyPolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin));
+                options.AddPolicy(ContractorOrAbovePolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin, Contractor));
+                options.AddPolicy(ManagerOrAbovePolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager));
+                options.AddPolicy(SupervisorOrAbovePolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager, Supervisor));
+                options.AddPolicy(WorkerOrAbovePolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager, Supervisor, Worker));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
