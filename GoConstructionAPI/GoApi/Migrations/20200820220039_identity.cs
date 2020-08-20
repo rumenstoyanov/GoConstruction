@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace GoApi.Migrations.UserDb
+namespace GoApi.Migrations
 {
     public partial class identity : Migration
     {
@@ -41,7 +41,8 @@ namespace GoApi.Migrations.UserDb
                     LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
-                    IsActive = table.Column<bool>(nullable: false)
+                    IsActive = table.Column<bool>(nullable: false),
+                    FullName = table.Column<string>(maxLength: 250, nullable: false)
                 },
                 constraints: table =>
                 {

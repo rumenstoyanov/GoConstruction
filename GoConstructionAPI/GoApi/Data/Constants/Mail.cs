@@ -11,11 +11,11 @@ namespace GoApi.Data.Constants
         {
             return $"{myCompanyName} Email Confirmation";
         }
-        public static string ConfirmationContractorBody(string username, string orgName, string myCompanyName, string comfirmationLink)
+        public static string ConfirmationContractorBody(string fullName, string orgName, string myCompanyName, string comfirmationLink)
         {
             string outString = @$"Welcome to {myCompanyName}, {orgName}!
 
-Dear {username},
+Dear {fullName},
 Please confirm your email address by clicking the link: {comfirmationLink}.
 Regards,
 

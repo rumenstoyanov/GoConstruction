@@ -56,7 +56,8 @@ namespace GoApi.Controllers
                 ApplicationUser user = new ApplicationUser()
                 {
                     Email = model.Email,
-                    UserName = model.UserName,
+                    UserName = model.Email,
+                    FullName = model.FullName,
                     IsActive = true,
                     PhoneNumber = model.PhoneNumber,
                     SecurityStamp = Guid.NewGuid().ToString(),

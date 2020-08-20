@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace GoApi.Migrations
+namespace GoApi.Migrations.AppDb
 {
     public partial class org : Migration
     {

@@ -3,17 +3,15 @@ using System;
 using GoApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace GoApi.Migrations.UserDb
+namespace GoApi.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20200820214604_identity")]
-    partial class identity
+    partial class UserDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,6 +37,11 @@ namespace GoApi.Migrations.UserDb
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("character varying(250)")
+                        .HasMaxLength(250);
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");

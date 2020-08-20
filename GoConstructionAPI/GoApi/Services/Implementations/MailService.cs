@@ -21,7 +21,7 @@ namespace GoApi.Services.Implementations
 
         public async Task SendConfirmationEmailContractorAsync(Organisation org, ApplicationUser user, string confirmationLink)
         {
-            string text = Mail.ConfirmationContractorBody(user.UserName, org.OrganisationName, _mailSettings.SenderName, confirmationLink);
+            string text = Mail.ConfirmationContractorBody(user.FullName, org.OrganisationName, _mailSettings.SenderName, confirmationLink);
             string subject = Mail.ConfirmationSubject(_mailSettings.SenderName);
             await SendMailAsync(user.UserName, user.Email, subject, text);
         }

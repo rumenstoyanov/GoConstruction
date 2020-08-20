@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace GoApi.Migrations
+namespace GoApi.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20200820214538_org")]
+    [Migration("20200820220058_org")]
     partial class org
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
