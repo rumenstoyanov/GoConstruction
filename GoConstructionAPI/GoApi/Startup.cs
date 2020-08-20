@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using GoApi.Data;
+using GoApi.Data.Constants;
 using GoApi.Data.Models;
+using GoApi.Services.Implementations;
+using GoApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,13 +37,17 @@ namespace GoApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var jwtSettings = new JwtSettings();
+            Configuration.Bind("JwtSettings", jwtSettings);
             services.AddControllers();
+            services.AddSingleton(jwtSettings);
             services.AddDbContext<UserDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<UserDbContext>()
                     .AddDefaultTokenProviders();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddScoped<IAuthService, AuthService>();
             services.Configure<IdentityOptions>(options =>
             {
                 options.User.RequireUniqueEmail = true;
@@ -50,6 +58,8 @@ namespace GoApi
                 options.Password.RequireUppercase = false;
                 options.Password.RequiredLength = 8;
                 options.Password.RequiredUniqueChars = 1;
+
+                options.SignIn.RequireConfirmedEmail = true;
             });
             services.AddAuthentication(options =>
             {
@@ -66,9 +76,9 @@ namespace GoApi
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = Configuration["JwtAudience"],
-                        ValidAudience = Configuration["JwtAudience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtSigningKey"]))
+                        ValidIssuer = Configuration["JwtSettings:Issuer"],
+                        ValidAudience = Configuration["JwtSettings:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtSettings:SigningKey"]))
                     };
                 });
             services.AddAuthorization(options =>

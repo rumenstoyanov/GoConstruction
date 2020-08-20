@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GoApi.Data.Dtos
 {
-    public class RegisterContractorDto
+    public class RegisterContractorRequestDto
     {
         [Required]
         [ValidEmail(ErrorMessage = "Email is not valid.")]

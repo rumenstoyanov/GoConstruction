@@ -14,7 +14,7 @@ namespace GoApi.Profiles
         public OrganisationProfile()
         {
             // Source -> Target
-            CreateMap<RegisterContractorDto, Organisation>();
+            CreateMap<RegisterContractorRequestDto, Organisation>();
         }
     }
 }

@@ -11,6 +11,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using GoApi.Data.Constants;
 using AutoMapper;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using GoApi.Services.Interfaces;
 
 namespace GoApi.Controllers
 {
@@ -23,19 +27,21 @@ namespace GoApi.Controllers
         private readonly UserDbContext _userDbContext;
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
+        private readonly IAuthService _authService;
 
-        public AuthController(UserManager<ApplicationUser> userManager, UserDbContext userDbContext, AppDbContext appDbContext, IMapper mapper)
+        public AuthController(UserManager<ApplicationUser> userManager, UserDbContext userDbContext, AppDbContext appDbContext, IMapper mapper, IAuthService authService)
         {
             _userManager = userManager;
             _userDbContext = userDbContext;
             _appDbContext = appDbContext;
             _mapper = mapper;
+            _authService = authService;
         }
 
 
         [HttpPost]
         [Route("register/contractor")]
-        public async Task<IActionResult> Register([FromBody] RegisterContractorDto model)
+        public async Task<IActionResult> Register([FromBody] RegisterContractorRequestDto model)
         {
             if (ModelState.IsValid)
             {
@@ -48,16 +54,16 @@ namespace GoApi.Controllers
                 ApplicationUser user = new ApplicationUser()
                 {
                     Email = model.Email,
-                    SecurityStamp = Guid.NewGuid().ToString(),
                     UserName = model.UserName,
                     IsActive = true,
-                    PhoneNumber = model.PhoneNumber
+                    PhoneNumber = model.PhoneNumber,
+                    SecurityStamp = Guid.NewGuid().ToString(),
                 };
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
-                    var org = _mapper.Map<Organisation>(model);
+                    var org = _mapper.Map<Organisation>(model); // The model is certainly mappable since the Required properties are identical in the DTO.
                     await _appDbContext.Organisations.AddAsync(org);
                     await _appDbContext.SaveChangesAsync();
 
@@ -71,6 +77,45 @@ namespace GoApi.Controllers
                 }
             }
             return BadRequest();
+        }
+
+        [HttpPost]
+        [Route("login/")]
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user != null)
+            {
+                if (!user.EmailConfirmed)
+                {
+                    return BadRequest(new List<IdentityError> { new IdentityError { Code = "EmailNotConfirmed", Description = "Please confirm your email address." } });
+                }
+
+                if (await _userManager.CheckPasswordAsync(user, model.Password))
+                {
+                    var userClaims = await _userManager.GetClaimsAsync(user);
+                    var userRoles = await _userManager.GetRolesAsync(user);
+
+                    var claims = new[]
+                    {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(userClaims[0].Type, userClaims[0].Value),
+                    new Claim(Seniority.SeniorityClaimKey, userRoles[0])
+                };
+
+                    var token = _authService.GenerateJwtToken(claims);
+
+                    return Ok(new LoginResponseDto
+                    {
+                        AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                        Expiration = token.ValidTo
+                    });
+
+                }
+            }
+            return Unauthorized();
         }
     }
 }
