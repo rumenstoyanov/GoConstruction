@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace GoApi.Migrations.AppDb
+namespace GoApi.Migrations
 {
     public partial class org : Migration
     {
@@ -12,7 +12,7 @@ namespace GoApi.Migrations.AppDb
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(maxLength: 250, nullable: false),
+                    OrganisationName = table.Column<string>(maxLength: 250, nullable: false),
                     Address = table.Column<string>(maxLength: 250, nullable: false),
                     Industry = table.Column<string>(maxLength: 250, nullable: false)
                 },

@@ -39,8 +39,12 @@ namespace GoApi
         {
             var jwtSettings = new JwtSettings();
             Configuration.Bind("JwtSettings", jwtSettings);
+            var mailSettings = new MailSettings();
+            Configuration.Bind("MailSettings", mailSettings);
+
             services.AddControllers();
             services.AddSingleton(jwtSettings);
+            services.AddSingleton(mailSettings);
             services.AddDbContext<UserDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -48,6 +52,7 @@ namespace GoApi
                     .AddDefaultTokenProviders();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IMailService, MailService>();
             services.Configure<IdentityOptions>(options =>
             {
                 options.User.RequireUniqueEmail = true;

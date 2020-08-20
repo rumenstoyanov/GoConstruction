@@ -28,14 +28,16 @@ namespace GoApi.Controllers
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
+        private readonly IMailService _mailService;
 
-        public AuthController(UserManager<ApplicationUser> userManager, UserDbContext userDbContext, AppDbContext appDbContext, IMapper mapper, IAuthService authService)
+        public AuthController(UserManager<ApplicationUser> userManager, UserDbContext userDbContext, AppDbContext appDbContext, IMapper mapper, IAuthService authService, IMailService mailService)
         {
             _userManager = userManager;
             _userDbContext = userDbContext;
             _appDbContext = appDbContext;
             _mapper = mapper;
             _authService = authService;
+            _mailService = mailService;
         }
 
 
@@ -63,12 +65,16 @@ namespace GoApi.Controllers
 
                 if (result.Succeeded)
                 {
-                    var org = _mapper.Map<Organisation>(model); // The model is certainly mappable since the Required properties are identical in the DTO.
+                    var org = _mapper.Map<Organisation>(model); // The model is certainly mappable since the Required properties are identical in the input DTO.
                     await _appDbContext.Organisations.AddAsync(org);
                     await _appDbContext.SaveChangesAsync();
 
                     await _userManager.AddClaimAsync(user, new Claim(Seniority.OrganisationIdClaimKey, org.Id.ToString()));
                     await _userManager.AddToRoleAsync(user, Seniority.Contractor);
+
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token = token }, Request.Scheme);
+                    await _mailService.SendConfirmationEmailContractorAsync(org, user, confirmationLink);
                     return Ok();
                 }
                 else
@@ -116,6 +122,32 @@ namespace GoApi.Controllers
                 }
             }
             return Unauthorized();
+        }
+
+        [HttpGet]
+        [Route("confirmemail")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, string token)
+        {
+            if (userId == null || token == null)
+            {
+                return BadRequest(new List<IdentityError> { new IdentityError { Code = "InvalidConfirmationLink", Description = "This is not a valid email confirmation link." } });
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return BadRequest(new List<IdentityError> { new IdentityError { Code = "InvalidConfirmationLink", Description = "This is not a valid email confirmation link." } });
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+
+            return BadRequest();
         }
     }
 }
