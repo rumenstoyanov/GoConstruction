@@ -15,6 +15,8 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using GoApi.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 
 namespace GoApi.Controllers
 {
@@ -28,16 +30,27 @@ namespace GoApi.Controllers
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
-        private readonly IMailService _mailService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IBackgroundTaskQueue _queue;
+        
 
-        public AuthController(UserManager<ApplicationUser> userManager, UserDbContext userDbContext, AppDbContext appDbContext, IMapper mapper, IAuthService authService, IMailService mailService)
+        public AuthController(
+            UserManager<ApplicationUser> userManager,
+            UserDbContext userDbContext,
+            AppDbContext appDbContext, 
+            IMapper mapper,
+            IAuthService authService,
+            IServiceScopeFactory serviceScopeFactory,
+            IBackgroundTaskQueue queue
+            )
         {
             _userManager = userManager;
             _userDbContext = userDbContext;
             _appDbContext = appDbContext;
             _mapper = mapper;
             _authService = authService;
-            _mailService = mailService;
+            _serviceScopeFactory = serviceScopeFactory;
+            _queue = queue;
         }
 
 
@@ -75,7 +88,16 @@ namespace GoApi.Controllers
 
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token = token }, Request.Scheme);
-                    await _mailService.SendConfirmationEmailContractorAsync(org, user, confirmationLink);
+
+                    _queue.QueueBackgroundWorkItem(async token =>
+                    {
+                        using (var scope = _serviceScopeFactory.CreateScope())
+                        {
+                            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                            await mailService.SendConfirmationEmailContractorAsync(org, user, confirmationLink);
+                        }
+                    });
+
                     return Ok();
                 }
                 else
