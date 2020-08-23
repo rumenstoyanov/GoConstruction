@@ -1,5 +1,6 @@
 ﻿using GoApi.Data.Constants;
 using GoApi.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,15 @@ namespace GoApi.Services.Implementations
                 signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
                 );
             return token;
+        }
+
+        public Guid GetRequestOid(HttpRequest request)
+        {
+            var jwt = request.Headers["Authorization"].ToString().Substring(7);
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(jwt);
+            string oid = token.Claims.Where(c => c.Type == Seniority.OrganisationIdClaimKey).ToList()[0].Value;
+            return Guid.Parse(oid);
         }
     }
 }

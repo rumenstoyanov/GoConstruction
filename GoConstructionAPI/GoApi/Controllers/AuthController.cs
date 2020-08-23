@@ -109,7 +109,7 @@ namespace GoApi.Controllers
         }
 
         [HttpPost]
-        [Route("login/")]
+        [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
