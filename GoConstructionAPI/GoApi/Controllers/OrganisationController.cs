@@ -12,6 +12,7 @@ using AutoMapper;
 using GoApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using GoApi.Data.Dtos;
+using System.Security.Claims;
 
 namespace GoApi.Controllers
 {
@@ -56,6 +57,23 @@ namespace GoApi.Controllers
             }
             return BadRequest();
             
+        }
+
+        [HttpGet]
+        [Route("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var users = (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive);
+            var mappedUsers = new List<ApplicationUserInfoResponseDto>();
+            foreach (var user in users)
+            {
+                var mappedUser = _mapper.Map<ApplicationUserInfoResponseDto>(user);
+                mappedUser.Position = (await _userManager.GetRolesAsync(user))[0];
+                mappedUsers.Add(mappedUser);
+            }
+
+            return Ok(mappedUsers);
         }
     }
 }
