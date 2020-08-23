@@ -17,6 +17,7 @@ using System.Text;
 using GoApi.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GoApi.Controllers
 {
@@ -58,55 +59,51 @@ namespace GoApi.Controllers
         [Route("register/contractor")]
         public async Task<IActionResult> Register([FromBody] RegisterContractorRequestDto model)
         {
-            if (ModelState.IsValid)
+            if (_appDbContext.Organisations.Any(org => org.OrganisationName == model.OrganisationName))
             {
-
-                if (_appDbContext.Organisations.Any(org => org.OrganisationName == model.OrganisationName))
-                {
-                    return BadRequest(new List<IdentityError> { new IdentityError { Code = "OrganisationTaken", Description = "The given organisation name already exists." } });
-                }
-
-                ApplicationUser user = new ApplicationUser()
-                {
-                    Email = model.Email,
-                    UserName = model.Email,
-                    FullName = model.FullName,
-                    IsActive = true,
-                    PhoneNumber = model.PhoneNumber,
-                    SecurityStamp = Guid.NewGuid().ToString(),
-                };
-                var result = await _userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
-                {
-                    var org = _mapper.Map<Organisation>(model); // The model is certainly mappable since the Required properties are identical in the input DTO.
-                    await _appDbContext.Organisations.AddAsync(org);
-                    await _appDbContext.SaveChangesAsync();
-
-                    await _userManager.AddClaimAsync(user, new Claim(Seniority.OrganisationIdClaimKey, org.Id.ToString()));
-                    await _userManager.AddToRoleAsync(user, Seniority.Contractor);
-
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token = token }, Request.Scheme);
-
-                    _queue.QueueBackgroundWorkItem(async token =>
-                    {
-                        using (var scope = _serviceScopeFactory.CreateScope())
-                        {
-                            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
-                            await mailService.SendConfirmationEmailContractorAsync(org, user, confirmationLink);
-                        }
-                    });
-
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(result.Errors.ToList());
-                }
+                return BadRequest(new List<IdentityError> { new IdentityError { Code = "OrganisationTaken", Description = "The given organisation name already exists." } });
             }
-            return BadRequest();
+
+            ApplicationUser user = new ApplicationUser()
+            {
+                Email = model.Email,
+                UserName = model.Email,
+                FullName = model.FullName,
+                IsActive = true,
+                PhoneNumber = model.PhoneNumber,
+                SecurityStamp = Guid.NewGuid().ToString(),
+            };
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                var org = _mapper.Map<Organisation>(model); // The model is certainly mappable since the Required properties are identical in the input DTO.
+                await _appDbContext.Organisations.AddAsync(org);
+                await _appDbContext.SaveChangesAsync();
+
+                await _userManager.AddClaimAsync(user, new Claim(Seniority.OrganisationIdClaimKey, org.Id.ToString()));
+                await _userManager.AddToRoleAsync(user, Seniority.Contractor);
+
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token = token }, Request.Scheme);
+
+                _queue.QueueBackgroundWorkItem(async token =>
+                {
+                    using (var scope = _serviceScopeFactory.CreateScope())
+                    {
+                        var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                        await mailService.SendConfirmationEmailContractorAsync(org, user, confirmationLink);
+                    }
+                });
+
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(result.Errors.ToList());
+            }
         }
+        
 
         [HttpPost]
         [Route("login")]
@@ -128,10 +125,12 @@ namespace GoApi.Controllers
 
                     var claims = new[]
                     {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                    new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(userClaims[0].Type, userClaims[0].Value),
-                    new Claim(Seniority.SeniorityClaimKey, userRoles[0])
+                    new Claim(userClaims.First().Type, userClaims.First().Value),
+                    new Claim(Seniority.SeniorityClaimKey, userRoles.First()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+
                 };
 
                     var token = _authService.GenerateJwtToken(claims);
@@ -172,5 +171,29 @@ namespace GoApi.Controllers
 
             return BadRequest();
         }
+
+        [HttpPost]
+        [Route("changepassword")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(result.Errors.ToList());
+            }
+        }
+
     }
 }

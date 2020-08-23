@@ -69,7 +69,7 @@ namespace GoApi.Controllers
             foreach (var user in users)
             {
                 var mappedUser = _mapper.Map<ApplicationUserInfoResponseDto>(user);
-                mappedUser.Position = (await _userManager.GetRolesAsync(user))[0];
+                mappedUser.Position = (await _userManager.GetRolesAsync(user)).First();
                 mappedUsers.Add(mappedUser);
             }
 

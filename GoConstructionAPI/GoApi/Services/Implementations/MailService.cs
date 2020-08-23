@@ -23,7 +23,7 @@ namespace GoApi.Services.Implementations
         {
             string text = Mail.ConfirmationContractorBody(user.FullName, org.OrganisationName, _mailSettings.SenderName, confirmationLink);
             string subject = Mail.ConfirmationSubject(_mailSettings.SenderName);
-            await SendMailAsync(user.UserName, user.Email, subject, text);
+            await SendMailAsync(user.FullName, user.Email, subject, text);
         }
 
         public async Task SendMailAsync(string toName, string toAddress, string subject, string text)
