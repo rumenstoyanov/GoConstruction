@@ -162,14 +162,14 @@ namespace GoApi.Controllers
         {
             if (userId == null || token == null)
             {
-                return BadRequest(new List<IdentityError> { new IdentityError { Code = "InvalidConfirmationLink", Description = "This is not a valid email confirmation link." } });
+                return BadRequest();
             }
 
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
-                return BadRequest(new List<IdentityError> { new IdentityError { Code = "InvalidConfirmationLink", Description = "This is not a valid email confirmation link." } });
+                return BadRequest();
             }
 
             var result = await _userManager.ConfirmEmailAsync(user, token);
@@ -183,12 +183,41 @@ namespace GoApi.Controllers
         }
 
         [HttpPost]
+        [Route("setinitial")]
+        [Authorize]
+        public async Task<IActionResult> SetInitial([FromBody] SetInitialRequestDto model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user.IsInitialSet || !user.IsActive || !user.EmailConfirmed)
+            {
+                return BadRequest();
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                user.IsInitialSet = true;
+                user.PhoneNumber = model.PhoneNumber;
+                await _userDbContext.SaveChangesAsync();
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(result.Errors.ToList());
+            }
+
+
+
+        }
+
+        [HttpPost]
         [Route("changepassword")]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto model)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            if (!user.IsActive || !user.EmailConfirmed)
             {
                 return BadRequest();
             }
