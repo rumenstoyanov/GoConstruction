@@ -42,6 +42,7 @@ namespace GoApi.Migrations
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     IsActive = table.Column<bool>(nullable: false),
+                    IsInitialSet = table.Column<bool>(nullable: false),
                     FullName = table.Column<string>(maxLength: 250, nullable: false)
                 },
                 constraints: table =>

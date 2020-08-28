@@ -64,7 +64,7 @@ namespace GoApi.Controllers
         public async Task<IActionResult> GetUsers()
         {
             var oid = _authService.GetRequestOid(Request);
-            var users = (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive);
+            var users = await _authService.GetValidUsersAsync(oid);
             var mappedUsers = new List<ApplicationUserInfoResponseDto>();
             foreach (var user in users)
             {

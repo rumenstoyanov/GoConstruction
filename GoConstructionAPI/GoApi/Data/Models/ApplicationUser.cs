@@ -13,6 +13,9 @@ namespace GoApi.Data.Models
         public bool IsActive { get; set; }
 
         [Required]
+        public bool IsInitialSet { get; set; }
+
+        [Required]
         [MaxLength(250)]
         public string FullName { get; set; }
     }

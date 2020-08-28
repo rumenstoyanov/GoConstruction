@@ -90,11 +90,34 @@ namespace GoApi
                 });
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(AdminOnlyPolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin));
-                options.AddPolicy(ContractorOrAbovePolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin, Contractor));
-                options.AddPolicy(ManagerOrAbovePolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager));
-                options.AddPolicy(SupervisorOrAbovePolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager, Supervisor));
-                options.AddPolicy(WorkerOrAbovePolicy, policy => policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager, Supervisor, Worker));
+                options.AddPolicy(AdminOnlyPolicy, policy => 
+                { 
+                    policy.RequireClaim(SeniorityClaimKey, Admin);
+                    policy.RequireClaim(IsInitalSetClaimKey, true.ToString());
+                
+                });
+                options.AddPolicy(ContractorOrAbovePolicy, policy => 
+                { 
+                    policy.RequireClaim(SeniorityClaimKey, Admin, Contractor);
+                    policy.RequireClaim(IsInitalSetClaimKey, true.ToString());
+
+                });
+                options.AddPolicy(ManagerOrAbovePolicy, policy => 
+                { 
+                    policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager);
+                    policy.RequireClaim(IsInitalSetClaimKey, true.ToString());
+                });
+                options.AddPolicy(SupervisorOrAbovePolicy, policy => 
+                { 
+                    policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager, Supervisor);
+                    policy.RequireClaim(IsInitalSetClaimKey, true.ToString());
+
+                });
+                options.AddPolicy(WorkerOrAbovePolicy, policy => 
+                { 
+                    policy.RequireClaim(SeniorityClaimKey, Admin, Contractor, Manager, Supervisor, Worker);
+                    policy.RequireClaim(IsInitalSetClaimKey, true.ToString());
+                });
             });
         }
 

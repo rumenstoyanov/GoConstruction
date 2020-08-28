@@ -9,6 +9,7 @@ namespace GoApi.Data.Constants
     {
         public const string SeniorityClaimKey = "Seniority";
         public const string OrganisationIdClaimKey = "oid";
+        public const string IsInitalSetClaimKey = "IsInitialSet";
 
         public const string Admin = "Admin";
         public const string Contractor = "Contractor";

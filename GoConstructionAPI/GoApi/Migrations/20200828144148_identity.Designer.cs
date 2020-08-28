@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GoApi.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20200820220039_identity")]
+    [Migration("20200828144148_identity")]
     partial class identity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,6 +46,9 @@ namespace GoApi.Migrations
                         .HasMaxLength(250);
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsInitialSet")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("LockoutEnabled")

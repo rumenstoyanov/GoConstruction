@@ -57,7 +57,7 @@ namespace GoApi.Controllers
 
         [HttpPost]
         [Route("register/contractor")]
-        public async Task<IActionResult> Register([FromBody] RegisterContractorRequestDto model)
+        public async Task<IActionResult> RegisterContractor([FromBody] RegisterContractorRequestDto model)
         {
             if (_appDbContext.Organisations.Any(org => org.OrganisationName == model.OrganisationName))
             {
@@ -70,6 +70,7 @@ namespace GoApi.Controllers
                 UserName = model.Email,
                 FullName = model.FullName,
                 IsActive = true,
+                IsInitialSet = true,
                 PhoneNumber = model.PhoneNumber,
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
@@ -113,6 +114,10 @@ namespace GoApi.Controllers
 
             if (user != null)
             {
+                if (!user.IsActive)
+                {
+                    return Unauthorized();
+                }
                 if (!user.EmailConfirmed)
                 {
                     return BadRequest(new List<IdentityError> { new IdentityError { Code = "EmailNotConfirmed", Description = "Please confirm your email address." } });
@@ -130,6 +135,7 @@ namespace GoApi.Controllers
                     new Claim(userClaims.First().Type, userClaims.First().Value),
                     new Claim(Seniority.SeniorityClaimKey, userRoles.First()),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(Seniority.IsInitalSetClaimKey, user.IsInitialSet.ToString())
 
                 };
 
@@ -148,7 +154,7 @@ namespace GoApi.Controllers
 
         [HttpGet]
         [Route("confirmemail")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, string token)
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
             if (userId == null || token == null)
             {
