@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace GoApi.Data.Constants
@@ -17,6 +18,19 @@ namespace GoApi.Data.Constants
 
 Dear {fullName},
 Please confirm your email address by clicking the link: {comfirmationLink}.
+Regards,
+
+-- The {myCompanyName} Team";
+            return outString;
+        }
+
+        public static string ConfirmationAndPasswordNonContractorBody(string fullName, string orgName, string myCompanyName, string comfirmationLink, string password, string inviterFullName)
+        {
+            string outString = @$"Hello from {myCompanyName}, {fullName}!
+{inviterFullName} has invited you to join {orgName}'s organisation on the {myCompanyName} service.
+Please confirm your email address by clicking the link: {comfirmationLink}.
+You may then log in with this email address at <WEB APP LINK HERE>, your password is: {password}.
+Please use this the first time; you will then be prompted to enter some extra information and change your password.
 Regards,
 
 -- The {myCompanyName} Team";

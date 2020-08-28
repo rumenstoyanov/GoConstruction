@@ -18,6 +18,7 @@ using GoApi.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoApi.Controllers
 {
@@ -57,6 +58,7 @@ namespace GoApi.Controllers
 
         [HttpPost]
         [Route("register/contractor")]
+        [AllowAnonymous]
         public async Task<IActionResult> RegisterContractor([FromBody] RegisterContractorRequestDto model)
         {
             if (_appDbContext.Organisations.Any(org => org.OrganisationName == model.OrganisationName))
@@ -108,6 +110,7 @@ namespace GoApi.Controllers
 
         [HttpPost]
         [Route("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -154,6 +157,7 @@ namespace GoApi.Controllers
 
         [HttpGet]
         [Route("confirmemail")]
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
             if (userId == null || token == null)
@@ -199,6 +203,54 @@ namespace GoApi.Controllers
             {
                 return BadRequest(result.Errors.ToList());
             }
+        }
+
+        [HttpPost]
+        [Route("register/manager")]
+        [Authorize(Policy = Seniority.ContractorOrAbovePolicy)]
+        public async Task<IActionResult> RegisterManager([FromBody] RegisterNonContractorRequestDto model)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var inviter = await _userManager.GetUserAsync(User);
+
+            ApplicationUser user = new ApplicationUser()
+            {
+                Email = model.Email,
+                UserName = model.Email,
+                FullName = model.FullName,
+                IsActive = true,
+                IsInitialSet = false,
+                SecurityStamp = Guid.NewGuid().ToString(),
+            };
+
+            string password = _authService.GeneratePassword();
+            var result = await _userManager.CreateAsync(user, password);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddClaimAsync(user, new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()));
+                await _userManager.AddToRoleAsync(user, Seniority.Manager);
+
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token = token }, Request.Scheme);
+
+                var org = await _appDbContext.Organisations.FirstOrDefaultAsync(o => o.Id == oid);
+
+                _queue.QueueBackgroundWorkItem(async token =>
+                {
+                    using (var scope = _serviceScopeFactory.CreateScope())
+                    {
+                        var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                        await mailService.SendConfirmationEmailAndPasswordNonContractor(org, user, inviter, Seniority.Manager, confirmationLink, password);
+                    }
+                });
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(result.Errors.ToList());
+            }
+
         }
 
     }

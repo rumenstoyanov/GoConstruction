@@ -16,5 +16,7 @@ namespace GoApi.Services.Interfaces
         Guid GetRequestOid(HttpRequest request);
 
         Task<IEnumerable<ApplicationUser>> GetValidUsersAsync(Guid oid);
+
+        string GeneratePassword();
     }
 }

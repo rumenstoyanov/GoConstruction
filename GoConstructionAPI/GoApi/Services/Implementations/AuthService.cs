@@ -11,6 +11,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security;
+using System.Text.RegularExpressions;
 
 namespace GoApi.Services.Implementations
 {
@@ -36,6 +38,22 @@ namespace GoApi.Services.Implementations
                 signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
                 );
             return token;
+        }
+
+        public string GeneratePassword()
+        {
+            string password = null;
+            bool isPasswordValid = false;
+            var random = new Random();
+            var regex = new Regex(Seniority.RandomPasswordRegex);
+
+            while (!isPasswordValid)
+            {
+                password = new string(Enumerable.Repeat(Seniority.RandomPasswordChars, Seniority.RandomPasswordLength).Select(s => s[random.Next(s.Length)]).ToArray());
+                isPasswordValid = regex.IsMatch(password);
+            }
+
+            return password;
         }
 
         public Guid GetRequestOid(HttpRequest request)

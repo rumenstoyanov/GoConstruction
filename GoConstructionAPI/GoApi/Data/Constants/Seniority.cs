@@ -22,6 +22,12 @@ namespace GoApi.Data.Constants
         public const string ManagerOrAbovePolicy = "ManagerOrAbove";
         public const string SupervisorOrAbovePolicy = "SupervisorOrAbove";
         public const string WorkerOrAbovePolicy = "WorkerOrAbove";
-        
+
+        public const string RandomPasswordChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        public const int RandomPasswordLength = 8;
+        public const string RandomPasswordRegex = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$";
+
+
+
     }
 }
