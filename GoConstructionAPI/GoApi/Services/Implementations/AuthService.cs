@@ -13,17 +13,35 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc;
+using GoApi.Data.Dtos;
+using System.Security.Policy;
+using GoApi.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoApi.Services.Implementations
 {
     public class AuthService : IAuthService
     {
         private readonly JwtSettings _jwtSettings;
+        private readonly AppDbContext _appDbContext;
         private readonly UserManager<ApplicationUser> _userManager;
-        public AuthService(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager)
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IBackgroundTaskQueue _queue;
+        public AuthService(
+            JwtSettings jwtSettings, 
+            UserManager<ApplicationUser> userManager, 
+            AppDbContext appDbContext,
+            IServiceScopeFactory serviceScopeFactory,
+            IBackgroundTaskQueue queue
+            )
         {
             _jwtSettings = jwtSettings;
+            _appDbContext = appDbContext;
             _userManager = userManager;
+            _serviceScopeFactory = serviceScopeFactory;
+            _queue = queue;
         }
         public JwtSecurityToken GenerateJwtToken(Claim[] claims)
         {
@@ -68,6 +86,50 @@ namespace GoApi.Services.Implementations
         public async Task<IEnumerable<ApplicationUser>> GetValidUsersAsync(Guid oid)
         {
             return (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive && u.EmailConfirmed && u.IsInitialSet);
+        }
+
+        public async Task<AuthInternalDto> RegisterNonContractorAsync(RegisterNonContractorRequestDto model, HttpRequest Request, ClaimsPrincipal User, IUrlHelper Url, string seniority)
+        {
+            var oid = GetRequestOid(Request);
+            var inviter = await _userManager.GetUserAsync(User);
+
+            ApplicationUser user = new ApplicationUser()
+            {
+                Email = model.Email,
+                UserName = model.Email,
+                FullName = model.FullName,
+                IsActive = true,
+                IsInitialSet = false,
+                SecurityStamp = Guid.NewGuid().ToString(),
+            };
+
+            string password = GeneratePassword();
+            var result = await _userManager.CreateAsync(user, password);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddClaimAsync(user, new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()));
+                await _userManager.AddToRoleAsync(user, seniority);
+
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token = token }, Request.Scheme);
+
+                var org = await _appDbContext.Organisations.FirstOrDefaultAsync(o => o.Id == oid);
+
+                _queue.QueueBackgroundWorkItem(async token =>
+                {
+                    using (var scope = _serviceScopeFactory.CreateScope())
+                    {
+                        var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                        await mailService.SendConfirmationEmailAndPasswordNonContractor(org, user, inviter, seniority, confirmationLink, password);
+                    }
+                });
+                return new AuthInternalDto { Success = true };
+            }
+            else
+            {
+                return new AuthInternalDto { Success = false, Errors = result.Errors.ToList() };
+            }
         }
     }
 }

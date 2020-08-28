@@ -24,10 +24,10 @@ Regards,
             return outString;
         }
 
-        public static string ConfirmationAndPasswordNonContractorBody(string fullName, string orgName, string myCompanyName, string comfirmationLink, string password, string inviterFullName)
+        public static string ConfirmationAndPasswordNonContractorBody(string fullName, string orgName, string myCompanyName, string comfirmationLink, string seniority, string password, string inviterFullName)
         {
             string outString = @$"Hello from {myCompanyName}, {fullName}!
-{inviterFullName} has invited you to join {orgName}'s organisation on the {myCompanyName} service.
+{inviterFullName} has invited you to join {orgName}'s organisation on the {myCompanyName} service in the position of {seniority}.
 Please confirm your email address by clicking the link: {comfirmationLink}.
 You may then log in with this email address at <WEB APP LINK HERE>, your password is: {password}.
 Please use this the first time; you will then be prompted to enter some extra information and change your password.

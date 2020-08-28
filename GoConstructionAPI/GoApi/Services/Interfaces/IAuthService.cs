@@ -1,5 +1,7 @@
-﻿using GoApi.Data.Models;
+﻿using GoApi.Data.Dtos;
+using GoApi.Data.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,5 +20,7 @@ namespace GoApi.Services.Interfaces
         Task<IEnumerable<ApplicationUser>> GetValidUsersAsync(Guid oid);
 
         string GeneratePassword();
+
+        Task<AuthInternalDto> RegisterNonContractorAsync(RegisterNonContractorRequestDto model, HttpRequest Request, ClaimsPrincipal User, IUrlHelper Url, string seniority);
     }
 }

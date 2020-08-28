@@ -21,7 +21,7 @@ namespace GoApi.Services.Implementations
 
         public async Task SendConfirmationEmailAndPasswordNonContractor(Organisation org, ApplicationUser user, ApplicationUser inviter, string seniority, string confirmationLink, string password)
         {
-            string text = Mail.ConfirmationAndPasswordNonContractorBody(user.FullName, org.OrganisationName, _mailSettings.SenderName, confirmationLink, password, inviter.FullName);
+            string text = Mail.ConfirmationAndPasswordNonContractorBody(user.FullName, org.OrganisationName, _mailSettings.SenderName, confirmationLink, seniority, password, inviter.FullName);
             string subject = Mail.ConfirmationSubject(_mailSettings.SenderName);
             await SendMailAsync(user.FullName, user.Email, subject, text);
         }
