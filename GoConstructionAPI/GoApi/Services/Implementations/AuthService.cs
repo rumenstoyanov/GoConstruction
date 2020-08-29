@@ -85,7 +85,7 @@ namespace GoApi.Services.Implementations
 
         public async Task<IEnumerable<ApplicationUser>> GetValidUsersAsync(Guid oid)
         {
-            return (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive && u.EmailConfirmed && u.IsInitialSet);
+            return (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive && u.EmailConfirmed);
         }
 
         public async Task<AuthInternalDto> RegisterNonContractorAsync(RegisterNonContractorRequestDto model, HttpRequest Request, ClaimsPrincipal User, IUrlHelper Url, string seniority)

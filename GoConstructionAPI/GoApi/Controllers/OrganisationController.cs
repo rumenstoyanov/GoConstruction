@@ -13,6 +13,8 @@ using GoApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using GoApi.Data.Dtos;
 using System.Security.Claims;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.Xml;
 
 namespace GoApi.Controllers
 {
@@ -74,6 +76,39 @@ namespace GoApi.Controllers
             }
 
             return Ok(mappedUsers);
+        }
+
+        [HttpGet]
+        [Route("users/me")]
+        public async Task<IActionResult> GetUsersDetailMe()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var mappedUser = _mapper.Map<ApplicationUserInfoResponseDto>(user);
+            mappedUser.Position = (await _userManager.GetRolesAsync(user)).First();
+            return Ok(mappedUser);
+
+        }
+
+        [HttpGet]
+        [Route("users/{userId}")]
+        public async Task<IActionResult> GetUsersDetail(string userId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var claims = await _userManager.GetClaimsAsync(user);
+
+            if (claims.Any(c => c.Type == Seniority.OrganisationIdClaimKey && c.Value == oid.ToString()) && user.IsActive && user.EmailConfirmed)
+            {
+                var mappedUser = _mapper.Map<ApplicationUserInfoResponseDto>(user);
+                mappedUser.Position = (await _userManager.GetRolesAsync(user)).First();
+                return Ok(mappedUser);
+            }
+
+            return NotFound();
         }
     }
 }
