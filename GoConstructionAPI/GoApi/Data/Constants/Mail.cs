@@ -12,15 +12,27 @@ namespace GoApi.Data.Constants
         {
             return $"{myCompanyName} Email Confirmation";
         }
+
+        public static string ResetPasswordSubject(string myCompanyName)
+        {
+            return $"{myCompanyName} Password Reset";
+        }
+
+        private static string Salutation(string myCompanyName)
+        {
+            string outString = @$"
+Regards,
+
+-- The {myCompanyName} Team";
+            return outString;
+        }
         public static string ConfirmationContractorBody(string fullName, string orgName, string myCompanyName, string comfirmationLink)
         {
             string outString = @$"Welcome to {myCompanyName}, {orgName}!
 
 Dear {fullName},
 Please confirm your email address by clicking the link: {comfirmationLink}.
-Regards,
-
--- The {myCompanyName} Team";
+{Salutation(myCompanyName)}";
             return outString;
         }
 
@@ -31,9 +43,18 @@ Regards,
 Please confirm your email address by clicking the link: {comfirmationLink}.
 You may then log in with this email address at <WEB APP LINK HERE>, your password is: {password}.
 Please use this the first time; you will then be prompted to enter some extra information and change your password.
-Regards,
+{Salutation(myCompanyName)}";
+            return outString;
+        }
 
--- The {myCompanyName} Team";
+
+        public static string ResetPasswordBody(string fullName, string myCompanyName, string newPassword)
+        {
+            string outString = @$"Dear {fullName},
+You made a request to reset to reset your {myCompanyName} password. You new password is {newPassword}.
+Please use this to log in at <WEB APP LINK HERE>.
+If you did not make this request please contact support <EMAIL HERE>.
+{Salutation(myCompanyName)}";
             return outString;
         }
     }

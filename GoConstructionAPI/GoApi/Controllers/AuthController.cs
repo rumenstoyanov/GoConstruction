@@ -285,5 +285,45 @@ namespace GoApi.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("resetpassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user != null)
+            {
+                if (!user.IsInitialSet || !user.IsActive || !user.EmailConfirmed)
+                {
+                    return BadRequest();
+                }
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                string newPassword = _authService.GeneratePassword();
+                var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+                if (result.Succeeded)
+                {
+                    user.IsInitialSet = false;
+                    await _userDbContext.SaveChangesAsync();
+
+                    _queue.QueueBackgroundWorkItem(async token =>
+                    {
+                        using (var scope = _serviceScopeFactory.CreateScope())
+                        {
+                            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                            await mailService.SendResetPasswordEmailAsync(user, newPassword);
+                        }
+                    });
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            return NotFound();
+        }
+
     }
 }

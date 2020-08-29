@@ -121,7 +121,7 @@ namespace GoApi.Services.Implementations
                     using (var scope = _serviceScopeFactory.CreateScope())
                     {
                         var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
-                        await mailService.SendConfirmationEmailAndPasswordNonContractor(org, user, inviter, seniority, confirmationLink, password);
+                        await mailService.SendConfirmationEmailAndPasswordNonContractorAsync(org, user, inviter, seniority, confirmationLink, password);
                     }
                 });
                 return new AuthInternalDto { Success = true };

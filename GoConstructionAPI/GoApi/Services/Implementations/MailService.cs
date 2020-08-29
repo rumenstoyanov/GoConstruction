@@ -19,7 +19,7 @@ namespace GoApi.Services.Implementations
             _mailSettings = mailSettings;
         }
 
-        public async Task SendConfirmationEmailAndPasswordNonContractor(Organisation org, ApplicationUser user, ApplicationUser inviter, string seniority, string confirmationLink, string password)
+        public async Task SendConfirmationEmailAndPasswordNonContractorAsync(Organisation org, ApplicationUser user, ApplicationUser inviter, string seniority, string confirmationLink, string password)
         {
             string text = Mail.ConfirmationAndPasswordNonContractorBody(user.FullName, org.OrganisationName, _mailSettings.SenderName, confirmationLink, seniority, password, inviter.FullName);
             string subject = Mail.ConfirmationSubject(_mailSettings.SenderName);
@@ -55,6 +55,13 @@ namespace GoApi.Services.Implementations
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
+        }
+
+        public async Task SendResetPasswordEmailAsync(ApplicationUser user, string newPassword)
+        {
+            string text = Mail.ResetPasswordBody(user.FullName, _mailSettings.SenderName, newPassword);
+            string subject = Mail.ResetPasswordSubject(_mailSettings.SenderName);
+            await SendMailAsync(user.FullName, user.Email, subject, text);
         }
     }
 }
