@@ -28,7 +28,6 @@ namespace GoApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly UserDbContext _userDbContext;
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
@@ -38,7 +37,6 @@ namespace GoApi.Controllers
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
-            UserDbContext userDbContext,
             AppDbContext appDbContext, 
             IMapper mapper,
             IAuthService authService,
@@ -47,7 +45,6 @@ namespace GoApi.Controllers
             )
         {
             _userManager = userManager;
-            _userDbContext = userDbContext;
             _appDbContext = appDbContext;
             _mapper = mapper;
             _authService = authService;
@@ -199,7 +196,7 @@ namespace GoApi.Controllers
             {
                 user.IsInitialSet = true;
                 user.PhoneNumber = model.PhoneNumber;
-                await _userDbContext.SaveChangesAsync();
+                await _appDbContext.SaveChangesAsync();
                 return Ok();
             }
             else
@@ -305,7 +302,7 @@ namespace GoApi.Controllers
                 if (result.Succeeded)
                 {
                     user.IsInitialSet = false;
-                    await _userDbContext.SaveChangesAsync();
+                    await _appDbContext.SaveChangesAsync();
 
                     _queue.QueueBackgroundWorkItem(async token =>
                     {

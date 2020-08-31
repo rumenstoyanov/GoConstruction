@@ -48,10 +48,9 @@ namespace GoApi
             services.AddControllers();
             services.AddSingleton(jwtSettings);
             services.AddSingleton(mailSettings);
-            services.AddDbContext<UserDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                    .AddEntityFrameworkStores<UserDbContext>()
+                    .AddEntityFrameworkStores<AppDbContext>()
                     .AddDefaultTokenProviders();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddScoped<IAuthService, AuthService>();

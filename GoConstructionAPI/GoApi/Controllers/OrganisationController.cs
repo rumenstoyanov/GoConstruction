@@ -25,7 +25,6 @@ namespace GoApi.Controllers
     public class OrganisationController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly UserDbContext _userDbContext;
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
@@ -33,14 +32,12 @@ namespace GoApi.Controllers
 
         public OrganisationController(
             UserManager<ApplicationUser> userManager,
-            UserDbContext userDbContext,
             AppDbContext appDbContext,
             IMapper mapper,
             IAuthService authService
             )
         {
             _userManager = userManager;
-            _userDbContext = userDbContext;
             _appDbContext = appDbContext;
             _mapper = mapper;
             _authService = authService;

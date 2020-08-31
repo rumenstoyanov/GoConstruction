@@ -18,5 +18,7 @@ namespace GoApi.Data.Models
 
         [MaxLength(250)]
         public string FullName { get; set; }
+
+        public List<Site> Sites { get; set; }
     }
 }

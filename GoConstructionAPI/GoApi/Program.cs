@@ -25,11 +25,9 @@ namespace GoApi
             using (var serviceScope = host.Services.CreateScope())
             {
                 // Get contexts
-                var userDbContext = serviceScope.ServiceProvider.GetRequiredService<UserDbContext>();
                 var appDbContext = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
 
                 // Migrate
-                await userDbContext.Database.MigrateAsync();
                 await appDbContext.Database.MigrateAsync();
 
                 // Seed roles if not present
