@@ -79,12 +79,6 @@ namespace GoApi.Controllers
 
         }
 
-        //[HttpDelete]
-        //[Route("{siteId}")]
-        //[Authorize(Policy = Seniority.ContractorOrAbovePolicy)]
-        //public Task<IActionResult> 
-
-
         [HttpGet("{siteId}", Name = nameof(GetSitesDetail))]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
         public async Task<IActionResult> GetSitesDetail(Guid siteId)
@@ -95,6 +89,21 @@ namespace GoApi.Controllers
             {
                 var mappedSite = _mapper.Map<SiteReadResponseDto>(site);
                 return Ok(mappedSite);
+            }
+            return NotFound();
+        }
+
+        [HttpDelete("{siteId}")]
+        [Authorize(Policy = Seniority.ContractorOrAbovePolicy)]
+        public async Task<IActionResult> DeleteSites(Guid siteId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId && s.IsActive && s.Oid == oid);
+            if (site != null)
+            {
+                site.IsActive = false;
+                await _appDbContext.SaveChangesAsync();
+                return NoContent();
             }
             return NotFound();
         }
