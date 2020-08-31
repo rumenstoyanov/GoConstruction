@@ -67,5 +67,31 @@ namespace GoApi.Controllers
 
         }
 
+        [HttpGet]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public IActionResult GetSites()
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var sites = _appDbContext.Sites.Where(s => s.Oid == oid && s.IsActive == true);
+            var mappedSites = _mapper.Map<IEnumerable<SiteReadResponseDto>>(sites);
+            return Ok(mappedSites);
+
+        }
+
+
+
+
+        //[HttpGet]
+        //[Route("{siteId}")]
+        //[Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        //public async Task<IActionResult> GetSiteDetail(Guid siteId)
+        //{
+        //    var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId);
+        //    var oid = _authService.GetRequestOid(Request);
+
+
+        //}
+
+
     }
 }
