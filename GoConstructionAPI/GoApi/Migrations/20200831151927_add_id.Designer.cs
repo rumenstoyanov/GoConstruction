@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GoApi.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20200828175341_identity_change_reqs")]
-    partial class identity_change_reqs
+    [Migration("20200831151927_add_id")]
+    partial class add_id
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

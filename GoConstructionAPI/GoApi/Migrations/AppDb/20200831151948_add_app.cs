@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GoApi.Migrations.AppDb
 {
-    public partial class org : Migration
+    public partial class add_app : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GoApi.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20200828144223_org")]
-    partial class org
+    [Migration("20200831151948_add_app")]
+    partial class add_app
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

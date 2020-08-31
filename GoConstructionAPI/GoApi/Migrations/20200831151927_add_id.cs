@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace GoApi.Migrations
 {
-    public partial class identity : Migration
+    public partial class add_id : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -43,7 +43,7 @@ namespace GoApi.Migrations
                     AccessFailedCount = table.Column<int>(nullable: false),
                     IsActive = table.Column<bool>(nullable: false),
                     IsInitialSet = table.Column<bool>(nullable: false),
-                    FullName = table.Column<string>(maxLength: 250, nullable: false)
+                    FullName = table.Column<string>(maxLength: 250, nullable: true)
                 },
                 constraints: table =>
                 {
