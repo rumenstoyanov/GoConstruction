@@ -63,7 +63,8 @@ namespace GoApi.Controllers
             await _appDbContext.AddAsync(mappedSite);
             await _appDbContext.SaveChangesAsync();
 
-            return Ok();
+            //return Ok();
+            return CreatedAtRoute(nameof(GetSitesDetail), new { siteId = mappedSite.Id }, _mapper.Map<SiteReadResponseDto>(mappedSite));
 
         }
 
@@ -72,25 +73,31 @@ namespace GoApi.Controllers
         public IActionResult GetSites()
         {
             var oid = _authService.GetRequestOid(Request);
-            var sites = _appDbContext.Sites.Where(s => s.Oid == oid && s.IsActive == true);
+            var sites = _appDbContext.Sites.Where(s => s.Oid == oid && s.IsActive);
             var mappedSites = _mapper.Map<IEnumerable<SiteReadResponseDto>>(sites);
             return Ok(mappedSites);
 
         }
 
-
-
-
-        //[HttpGet]
+        //[HttpDelete]
         //[Route("{siteId}")]
-        //[Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-        //public async Task<IActionResult> GetSiteDetail(Guid siteId)
-        //{
-        //    var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId);
-        //    var oid = _authService.GetRequestOid(Request);
+        //[Authorize(Policy = Seniority.ContractorOrAbovePolicy)]
+        //public Task<IActionResult> 
 
 
-        //}
+        [HttpGet("{siteId}", Name = nameof(GetSitesDetail))]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public async Task<IActionResult> GetSitesDetail(Guid siteId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId && s.IsActive && s.Oid == oid);
+            if (site != null)
+            {
+                var mappedSite = _mapper.Map<SiteReadResponseDto>(site);
+                return Ok(mappedSite);
+            }
+            return NotFound();
+        }
 
 
     }

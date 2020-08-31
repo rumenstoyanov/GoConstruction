@@ -44,8 +44,7 @@ namespace GoApi.Controllers
 
         }
 
-        [HttpGet]
-        [Route("info")]
+        [HttpGet("info")]
         public async Task<IActionResult> GetOrganisationInfo()
         {
             var oid = _authService.GetRequestOid(Request);
@@ -58,8 +57,7 @@ namespace GoApi.Controllers
             
         }
 
-        [HttpGet]
-        [Route("users")]
+        [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
             var oid = _authService.GetRequestOid(Request);
@@ -75,8 +73,7 @@ namespace GoApi.Controllers
             return Ok(mappedUsers);
         }
 
-        [HttpGet]
-        [Route("users/me")]
+        [HttpGet("users/me")]
         public async Task<IActionResult> GetUsersDetailMe()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -86,8 +83,7 @@ namespace GoApi.Controllers
 
         }
 
-        [HttpGet]
-        [Route("users/{userId}")]
+        [HttpGet("users/{userId}")]
         public async Task<IActionResult> GetUsersDetail(string userId)
         {
             var oid = _authService.GetRequestOid(Request);
