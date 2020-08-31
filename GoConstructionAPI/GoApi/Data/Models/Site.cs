@@ -13,6 +13,7 @@ namespace GoApi.Data.Models
         public Guid Id { get; set; }
         [Required]
         public Organisation Organisation { get; set; }
+        [Required]
         [ForeignKey("Organisation")]
         public Guid Oid { get; set; }
         [Required]
@@ -24,7 +25,11 @@ namespace GoApi.Data.Models
         [Required]
         public ApplicationUser CreatedByUser { get; set; }
         [Required]
+        [MaxLength(250)]
         public string Title { get; set; }
+        [MaxLength(4000)]
         public string Description { get; set; }
+        [Required]
+        public DateTime EndDate { get; set; }
     }
 }
