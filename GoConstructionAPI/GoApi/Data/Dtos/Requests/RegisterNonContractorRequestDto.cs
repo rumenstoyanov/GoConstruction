@@ -1,24 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using GoApi.Data.Attributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GoApi.Data.Models
+namespace GoApi.Data.Dtos
 {
-    public class ApplicationUser : IdentityUser
+    public class RegisterNonContractorRequestDto
     {
         [Required]
-        public bool IsActive { get; set; }
+        [ValidEmail(ErrorMessage = "Email is not valid.")]
+        public string Email { get; set; }
 
         [Required]
-        public bool IsInitialSet { get; set; }
-
-
         [MaxLength(250)]
         public string FullName { get; set; }
 
-        public List<Site> Sites { get; set; }
     }
 }

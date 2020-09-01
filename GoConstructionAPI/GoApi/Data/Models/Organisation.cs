@@ -23,6 +23,8 @@ namespace GoApi.Data.Models
         [MaxLength(250)]
         public string Industry { get; set; }
 
+        public List<Site> Sites { get; set; }
+
 
     } 
 }

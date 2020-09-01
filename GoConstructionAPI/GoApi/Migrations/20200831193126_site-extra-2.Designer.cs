@@ -9,9 +9,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace GoApi.Migrations
 {
-    [DbContext(typeof(UserDbContext))]
-    [Migration("20200831151927_add_id")]
-    partial class add_id
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20200831193126_site-extra-2")]
+    partial class siteextra2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -93,6 +93,72 @@ namespace GoApi.Migrations
                         .HasName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("GoApi.Data.Models.Organisation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("character varying(250)")
+                        .HasMaxLength(250);
+
+                    b.Property<string>("Industry")
+                        .IsRequired()
+                        .HasColumnType("character varying(250)")
+                        .HasMaxLength(250);
+
+                    b.Property<string>("OrganisationName")
+                        .IsRequired()
+                        .HasColumnType("character varying(250)")
+                        .HasMaxLength(250);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Organisations");
+                });
+
+            modelBuilder.Entity("GoApi.Data.Models.Site", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("character varying(4000)")
+                        .HasMaxLength(4000);
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("Oid")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("character varying(250)")
+                        .HasMaxLength(250);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("Oid");
+
+                    b.ToTable("Sites");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -223,6 +289,21 @@ namespace GoApi.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("GoApi.Data.Models.Site", b =>
+                {
+                    b.HasOne("GoApi.Data.Models.ApplicationUser", "CreatedByUser")
+                        .WithMany("Sites")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GoApi.Data.Models.Organisation", "Organisation")
+                        .WithMany("Sites")
+                        .HasForeignKey("Oid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

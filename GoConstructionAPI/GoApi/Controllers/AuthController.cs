@@ -28,7 +28,6 @@ namespace GoApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly UserDbContext _userDbContext;
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
@@ -38,7 +37,6 @@ namespace GoApi.Controllers
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
-            UserDbContext userDbContext,
             AppDbContext appDbContext, 
             IMapper mapper,
             IAuthService authService,
@@ -47,7 +45,6 @@ namespace GoApi.Controllers
             )
         {
             _userManager = userManager;
-            _userDbContext = userDbContext;
             _appDbContext = appDbContext;
             _mapper = mapper;
             _authService = authService;
@@ -56,8 +53,7 @@ namespace GoApi.Controllers
         }
 
 
-        [HttpPost]
-        [Route("register/contractor")]
+        [HttpPost("register/contractor")]
         [AllowAnonymous]
         public async Task<IActionResult> RegisterContractor([FromBody] RegisterContractorRequestDto model)
         {
@@ -108,8 +104,7 @@ namespace GoApi.Controllers
         }
         
 
-        [HttpPost]
-        [Route("login")]
+        [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
@@ -155,8 +150,7 @@ namespace GoApi.Controllers
             return Unauthorized();
         }
 
-        [HttpGet]
-        [Route("confirmemail")]
+        [HttpGet("confirmemail")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
@@ -182,8 +176,7 @@ namespace GoApi.Controllers
             return BadRequest();
         }
 
-        [HttpPost]
-        [Route("setinitial")]
+        [HttpPost("setinitial")]
         [Authorize]
         public async Task<IActionResult> SetInitial([FromBody] SetInitialRequestDto model)
         {
@@ -199,7 +192,7 @@ namespace GoApi.Controllers
             {
                 user.IsInitialSet = true;
                 user.PhoneNumber = model.PhoneNumber;
-                await _userDbContext.SaveChangesAsync();
+                await _appDbContext.SaveChangesAsync();
                 return Ok();
             }
             else
@@ -211,8 +204,7 @@ namespace GoApi.Controllers
 
         }
 
-        [HttpPost]
-        [Route("changepassword")]
+        [HttpPost("changepassword")]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto model)
         {
@@ -234,8 +226,7 @@ namespace GoApi.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("register/manager")]
+        [HttpPost("register/manager")]
         [Authorize(Policy = Seniority.ContractorOrAbovePolicy)]
         public async Task<IActionResult> RegisterManager([FromBody] RegisterNonContractorRequestDto model)
         {
@@ -251,8 +242,7 @@ namespace GoApi.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("register/supervisor")]
+        [HttpPost("register/supervisor")]
         [Authorize(Policy = Seniority.ManagerOrAbovePolicy)]
         public async Task<IActionResult> RegisterSuperviosr([FromBody] RegisterNonContractorRequestDto model)
         {
@@ -268,8 +258,7 @@ namespace GoApi.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("register/worker")]
+        [HttpPost("register/worker")]
         [Authorize(Policy = Seniority.SupervisorOrAbovePolicy)]
         public async Task<IActionResult> RegisterWorker([FromBody] RegisterNonContractorRequestDto model)
         {
@@ -285,8 +274,7 @@ namespace GoApi.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("resetpassword")]
+        [HttpPost("resetpassword")]
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto model)
         {
@@ -305,7 +293,7 @@ namespace GoApi.Controllers
                 if (result.Succeeded)
                 {
                     user.IsInitialSet = false;
-                    await _userDbContext.SaveChangesAsync();
+                    await _appDbContext.SaveChangesAsync();
 
                     _queue.QueueBackgroundWorkItem(async token =>
                     {

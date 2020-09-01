@@ -25,7 +25,6 @@ namespace GoApi.Controllers
     public class OrganisationController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly UserDbContext _userDbContext;
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
@@ -33,22 +32,19 @@ namespace GoApi.Controllers
 
         public OrganisationController(
             UserManager<ApplicationUser> userManager,
-            UserDbContext userDbContext,
             AppDbContext appDbContext,
             IMapper mapper,
             IAuthService authService
             )
         {
             _userManager = userManager;
-            _userDbContext = userDbContext;
             _appDbContext = appDbContext;
             _mapper = mapper;
             _authService = authService;
 
         }
 
-        [HttpGet]
-        [Route("info")]
+        [HttpGet("info")]
         public async Task<IActionResult> GetOrganisationInfo()
         {
             var oid = _authService.GetRequestOid(Request);
@@ -61,8 +57,7 @@ namespace GoApi.Controllers
             
         }
 
-        [HttpGet]
-        [Route("users")]
+        [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
             var oid = _authService.GetRequestOid(Request);
@@ -78,8 +73,7 @@ namespace GoApi.Controllers
             return Ok(mappedUsers);
         }
 
-        [HttpGet]
-        [Route("users/me")]
+        [HttpGet("users/me")]
         public async Task<IActionResult> GetUsersDetailMe()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -89,8 +83,7 @@ namespace GoApi.Controllers
 
         }
 
-        [HttpGet]
-        [Route("users/{userId}")]
+        [HttpGet("users/{userId}")]
         public async Task<IActionResult> GetUsersDetail(string userId)
         {
             var oid = _authService.GetRequestOid(Request);
