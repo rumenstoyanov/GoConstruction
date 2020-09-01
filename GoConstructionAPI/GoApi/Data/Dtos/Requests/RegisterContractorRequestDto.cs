@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GoApi.Data.Attributes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -40,11 +41,4 @@ namespace GoApi.Data.Dtos
         public string Industry { get; set; }
     }
 
-    public class ValidEmailAttribute : ValidationAttribute
-    {
-        public override bool IsValid(object value)
-        {
-            return Regex.IsMatch(value.ToString(), @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
-        }
-    }
 }
