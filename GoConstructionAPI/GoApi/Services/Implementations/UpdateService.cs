@@ -1,4 +1,6 @@
-﻿using GoApi.Services.Interfaces;
+﻿using GoApi.Data.Dtos;
+using GoApi.Data.Models;
+using GoApi.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +39,22 @@ namespace GoApi.Services.Implementations
             }
             return diffDict;
 
+        }
+
+        // If there is no update, then returns null.
+        public Update SiteUpdate(ApplicationUser user, SiteUpdateRequestDto preUpdate, SiteUpdateRequestDto postUpdate)
+        {
+            var diff = Diff(preUpdate, postUpdate);
+            if (diff.Any())
+            {
+                var syntax = AssembleSyntaxFromDiff(diff);
+                var update = new Update { Time = DateTime.UtcNow };
+                update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = "api/Organisation/users/", Name = user.FullName }, Syntax = null });
+                update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = syntax });
+                return update;
+            }
+            return null;
+            
         }
     }
 }
