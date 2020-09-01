@@ -11,6 +11,7 @@ using GoApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,6 +108,28 @@ namespace GoApi.Controllers
             }
             return NotFound();
         }
+
+        [HttpPatch("{siteId}")]
+        [Authorize(Policy = Seniority.ManagerOrAbovePolicy)]
+        public async Task<IActionResult> PatchSites(Guid siteId, JsonPatchDocument<SiteUpdateRequestDto> patchDoc)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId && s.IsActive && s.Oid == oid);
+            if (site != null)
+            {
+                var siteToPatch = _mapper.Map<SiteUpdateRequestDto>(site);
+                patchDoc.ApplyTo(siteToPatch, ModelState);
+                if (!TryValidateModel(siteToPatch))
+                {
+                    return ValidationProblem(ModelState);
+                }
+                _mapper.Map(siteToPatch, site);
+                await _appDbContext.SaveChangesAsync();
+                return NoContent();
+            }
+            return NotFound();
+        }
+
 
 
     }

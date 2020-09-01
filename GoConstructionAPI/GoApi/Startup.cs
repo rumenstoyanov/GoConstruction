@@ -25,6 +25,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.OpenApi.Models;
 using static GoApi.Data.Constants.Seniority;
 using Swashbuckle.AspNetCore.Filters;
+using Newtonsoft.Json.Serialization;
 
 namespace GoApi
 {
@@ -45,7 +46,9 @@ namespace GoApi
             var mailSettings = new MailSettings();
             Configuration.Bind("MailSettings", mailSettings);
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(s => {
+                s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
             services.AddSingleton(jwtSettings);
             services.AddSingleton(mailSettings);
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));

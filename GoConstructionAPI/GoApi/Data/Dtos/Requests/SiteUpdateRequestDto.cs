@@ -8,10 +8,12 @@ namespace GoApi.Data.Dtos
 {
     public class SiteUpdateRequestDto
     {
+        [Required]
         [MaxLength(250)]
         public string Title { get; set; }
         [MaxLength(4000)]
         public string Description { get; set; }
+        [Required]
         public DateTime EndDate { get; set; }
     }
 }

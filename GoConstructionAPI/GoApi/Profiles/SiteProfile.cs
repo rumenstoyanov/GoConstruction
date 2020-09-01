@@ -15,6 +15,8 @@ namespace GoApi.Profiles
             // Source -> Target
             CreateMap<SiteCreateRequestDto, Site>();
             CreateMap<Site, SiteReadResponseDto>();
+            CreateMap<SiteUpdateRequestDto, Site>();
+            CreateMap<Site, SiteUpdateRequestDto>();
         }
     }
 }
