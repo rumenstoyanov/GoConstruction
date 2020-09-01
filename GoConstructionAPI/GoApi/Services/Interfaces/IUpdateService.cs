@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace GoApi.Services.Interfaces
 {
-    public interface IUpdateService<T> where T : class
+    public interface IUpdateService
     {
-        Dictionary<string, string> Diff(T preUpdate, T postUpdate);
+        Dictionary<string, string> Diff<T>(T preUpdate, T postUpdate) where T : class;
     }
 }
