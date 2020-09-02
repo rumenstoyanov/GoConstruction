@@ -19,6 +19,17 @@ namespace GoApi.Services.Implementations
             _mailSettings = mailSettings;
         }
 
+        public Dictionary<string, string> GetNameAddressPairs(List<ApplicationUser> recepients)
+        {
+            var outDict = new Dictionary<string, string>();
+            foreach (var r in recepients)
+            {
+                outDict.Add(r.FullName, r.Email);
+            }
+            return outDict;
+
+        }
+
         public async Task SendConfirmationEmailAndPasswordNonContractorAsync(Organisation org, ApplicationUser user, ApplicationUser inviter, string seniority, string confirmationLink, string password)
         {
             string text = Mail.ConfirmationAndPasswordNonContractorBody(user.FullName, org.OrganisationName, _mailSettings.SenderName, confirmationLink, seniority, password, inviter.FullName);
@@ -57,11 +68,28 @@ namespace GoApi.Services.Implementations
             }
         }
 
+        public async Task SendMailAsync(Dictionary<string, string> nameAddressPairs, string subject, string text)
+        {
+            var emailTasks = new List<Task>();
+            foreach (var name in nameAddressPairs.Keys)
+            {
+                emailTasks.Add(SendMailAsync(name, nameAddressPairs[name], subject, text));
+            }
+            await Task.WhenAll(emailTasks);
+        }
+
         public async Task SendResetPasswordEmailAsync(ApplicationUser user, string newPassword)
         {
             string text = Mail.ResetPasswordBody(user.FullName, _mailSettings.SenderName, newPassword);
             string subject = Mail.ResetPasswordSubject(_mailSettings.SenderName);
             await SendMailAsync(user.FullName, user.Email, subject, text);
+        }
+
+        public async Task SendSiteUpdateAsync(List<ApplicationUser> recepients, Update update, Site site)
+        {
+            string text = Mail.SiteUpdate(update.ToString(), site.Title, site.FriendlyId);
+            string subject = Mail.SiteUpdateSubject(_mailSettings.SenderName, site.FriendlyId);
+            await SendMailAsync(GetNameAddressPairs(recepients), subject, text);
         }
     }
 }

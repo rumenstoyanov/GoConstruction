@@ -13,7 +13,10 @@ namespace GoApi.Services.Interfaces
 
         string AssembleSyntaxFromDiff(Dictionary<string, string> diff);
 
-        Update SiteUpdate(ApplicationUser user, SiteUpdateRequestDto preUpdate, SiteUpdateRequestDto postUpdate);
+        Update GetSiteUpdate(ApplicationUser user, Site site, SiteUpdateRequestDto preUpdate, SiteUpdateRequestDto postUpdate);
+
+        List<ApplicationUser> GetSiteUpdateRecipients(Site site);
+
 
 
     }

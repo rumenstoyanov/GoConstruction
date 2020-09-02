@@ -9,11 +9,14 @@ using System.Threading.Tasks;
 
 namespace GoApi.Data.Models
 {
-    // All readable (the "Name" and "Syntax" fields) except the first start with a space .
+    // All readable (the "Name" and "Syntax" fields) except the first start with a space.
+    // Resource Id is the Guid of the resource that has been updated, can be a site or a job (OK since Guid is universally unique).
     public class Update
     {
         [Key]
         public Guid Id { get; set; }
+        [Required]
+        public Guid UpdatedResourceId { get; set; }
         [Required]
         public DateTime Time { get; set; }
         [Required]

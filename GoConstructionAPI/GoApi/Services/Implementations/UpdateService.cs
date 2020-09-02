@@ -21,7 +21,7 @@ namespace GoApi.Services.Implementations
             }
 
             var lastKey = diff.Keys.Last();
-            sb.Append($" updated the {lastKey} to {diff[lastKey]}.");
+            sb.Append($" updated the {lastKey} to {diff[lastKey]}");
             return sb.ToString();
 
         }
@@ -42,19 +42,24 @@ namespace GoApi.Services.Implementations
         }
 
         // If there is no update, then returns null.
-        public Update SiteUpdate(ApplicationUser user, SiteUpdateRequestDto preUpdate, SiteUpdateRequestDto postUpdate)
+        public Update GetSiteUpdate(ApplicationUser user, Site site, SiteUpdateRequestDto preUpdate, SiteUpdateRequestDto postUpdate)
         {
             var diff = Diff(preUpdate, postUpdate);
             if (diff.Any())
             {
                 var syntax = AssembleSyntaxFromDiff(diff);
-                var update = new Update { Time = DateTime.UtcNow };
+                var update = new Update { UpdatedResourceId = site.Id, Time = DateTime.UtcNow };
                 update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = "api/Organisation/users/", Name = user.FullName }, Syntax = null });
                 update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = syntax });
                 return update;
             }
             return null;
             
+        }
+
+        public List<ApplicationUser> GetSiteUpdateRecipients(Site site)
+        {
+            return new List<ApplicationUser> { site.CreatedByUser };
         }
     }
 }

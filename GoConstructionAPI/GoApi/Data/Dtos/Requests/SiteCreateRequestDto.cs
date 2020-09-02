@@ -15,5 +15,7 @@ namespace GoApi.Data.Dtos
         public string Description { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
+        [MaxLength(16)]
+        public string FriendlyId { get; set; }
     }
 }

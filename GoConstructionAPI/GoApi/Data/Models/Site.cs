@@ -31,5 +31,8 @@ namespace GoApi.Data.Models
         public string Description { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
+        [Required]
+        [MaxLength(16)]
+        public string FriendlyId { get; set; }
     }
 }
