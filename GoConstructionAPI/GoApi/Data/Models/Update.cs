@@ -16,6 +16,11 @@ namespace GoApi.Data.Models
         [Key]
         public Guid Id { get; set; }
         [Required]
+        public Organisation Organisation { get; set; }
+        [Required]
+        [ForeignKey(nameof(Organisation))]
+        public Guid Oid { get; set; }
+        [Required]
         public Guid UpdatedResourceId { get; set; }
         [Required]
         public DateTime Time { get; set; }

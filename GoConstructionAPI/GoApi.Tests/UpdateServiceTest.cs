@@ -49,7 +49,7 @@ namespace GoApi.Tests
         {
             // Arrange
             var diff = new Dictionary<string, string> { { "Title", "ReTestTitle" } };
-            var expected = " updated the Title to ReTestTitle.";
+            var expected = " updated the Title to ReTestTitle";
 
             // Act
             var updateService = new UpdateService();
@@ -64,7 +64,7 @@ namespace GoApi.Tests
         {
             // Arrange
             var diff = new Dictionary<string, string> { { "Title", "ReTestTitle" }, { "Description", "ReTestDescription" } };
-            var expected = " updated the Title to ReTestTitle, updated the Description to ReTestDescription.";
+            var expected = " updated the Title to ReTestTitle, updated the Description to ReTestDescription";
 
             // Act
             var updateService = new UpdateService();

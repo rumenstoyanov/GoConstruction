@@ -14,7 +14,7 @@ namespace GoApi.Data.Models
         [Required]
         public Organisation Organisation { get; set; }
         [Required]
-        [ForeignKey("Organisation")]
+        [ForeignKey(nameof(Organisation))]
         public Guid Oid { get; set; }
         [Required]
         public bool IsActive { get; set; }
