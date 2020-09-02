@@ -73,7 +73,7 @@ namespace GoApi.Controllers
 
         [HttpGet]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-         public IActionResult GetSites()
+        public IActionResult GetSites()
         {
             var oid = _authService.GetRequestOid(Request);
             var sites = _appDbContext.Sites.Where(s => s.Oid == oid && s.IsActive);
@@ -127,10 +127,11 @@ namespace GoApi.Controllers
                 }
                 var update = _updateService.GetSiteUpdate(await _userManager.GetUserAsync(User), site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch);
                 _mapper.Map(siteToPatch, site);
-                await _appDbContext.SaveChangesAsync();
 
                 if (update != null)
                 {
+                    _appDbContext.Add(update);
+
                     _queue.QueueBackgroundWorkItem(async token =>
                     {
                         using (var scope = _serviceScopeFactory.CreateScope())
@@ -142,6 +143,7 @@ namespace GoApi.Controllers
                         }
                     });
                 }
+                await _appDbContext.SaveChangesAsync();
                 return NoContent();
             }
             return NotFound();

@@ -48,7 +48,7 @@ namespace GoApi.Services.Implementations
             if (diff.Any())
             {
                 var syntax = AssembleSyntaxFromDiff(diff);
-                var update = new Update { UpdatedResourceId = site.Id, Time = DateTime.UtcNow };
+                var update = new Update { UpdatedResourceId = site.Id, Time = DateTime.UtcNow, Oid = site.Oid };
                 update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = "api/Organisation/users/", Name = user.FullName }, Syntax = null });
                 update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = syntax });
                 return update;

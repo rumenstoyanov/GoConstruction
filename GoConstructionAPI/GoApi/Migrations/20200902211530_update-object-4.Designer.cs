@@ -5,15 +5,17 @@ using GoApi.Data;
 using GoApi.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace GoApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200902211530_update-object-4")]
+    partial class updateobject4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -340,7 +342,7 @@ namespace GoApi.Migrations
             modelBuilder.Entity("GoApi.Data.Models.Update", b =>
                 {
                     b.HasOne("GoApi.Data.Models.Organisation", "Organisation")
-                        .WithMany("Updates")
+                        .WithMany()
                         .HasForeignKey("Oid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

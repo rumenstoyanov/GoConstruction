@@ -24,6 +24,7 @@ namespace GoApi.Data.Models
         public string Industry { get; set; }
 
         public List<Site> Sites { get; set; }
+        public List<Update> Updates { get; set; }
 
 
     } 
