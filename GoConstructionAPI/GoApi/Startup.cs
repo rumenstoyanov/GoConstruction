@@ -60,6 +60,7 @@ namespace GoApi
             services.AddScoped<IMailService, MailService>();
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+            services.AddScoped<IUpdateService, UpdateService>();
             services.Configure<IdentityOptions>(options =>
             {
                 options.User.RequireUniqueEmail = true;

@@ -29,6 +29,7 @@ namespace GoApi.Controllers
         private readonly IAuthService _authService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IBackgroundTaskQueue _queue;
+        private readonly IUpdateService _updateService;
 
 
         public SitesController(
@@ -37,7 +38,8 @@ namespace GoApi.Controllers
             IMapper mapper,
             IAuthService authService,
             IServiceScopeFactory serviceScopeFactory,
-            IBackgroundTaskQueue queue
+            IBackgroundTaskQueue queue,
+            IUpdateService updateService
             )
         {
             _userManager = userManager;
@@ -46,6 +48,7 @@ namespace GoApi.Controllers
             _authService = authService;
             _serviceScopeFactory = serviceScopeFactory;
             _queue = queue;
+            _updateService = updateService;
         }
 
         [HttpPost]
@@ -122,8 +125,23 @@ namespace GoApi.Controllers
                 {
                     return ValidationProblem(ModelState);
                 }
+                var update = _updateService.GetSiteUpdate(await _userManager.GetUserAsync(User), site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch);
                 _mapper.Map(siteToPatch, site);
                 await _appDbContext.SaveChangesAsync();
+
+                if (update != null)
+                {
+                    _queue.QueueBackgroundWorkItem(async token =>
+                    {
+                        using (var scope = _serviceScopeFactory.CreateScope())
+                        {
+                            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                            var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
+                            var recepients = updateService.GetSiteUpdateRecipients(site);
+                            await mailService.SendSiteUpdateAsync(recepients, update, site);
+                        }
+                    });
+                }
                 return NoContent();
             }
             return NotFound();

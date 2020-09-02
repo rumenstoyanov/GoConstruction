@@ -18,6 +18,11 @@ namespace GoApi.Data.Constants
             return $"{myCompanyName} Password Reset";
         }
 
+        public static string SiteUpdateSubject(string myCompanyName, string siteFriendlyId)
+        {
+            return $"Site {siteFriendlyId} Update ({myCompanyName})";
+        }
+
         private static string Salutation(string myCompanyName)
         {
             string outString = @$"
@@ -57,5 +62,16 @@ If you did not make this request please contact support <EMAIL HERE>.
 {Salutation(myCompanyName)}";
             return outString;
         }
+
+        public static string SiteUpdate(string update, string siteTitle, string siteFriendlyId)
+        {
+            string outString = @$"Site {siteFriendlyId} - {siteTitle}
+
+{update}
+";
+            return outString;
+        }
+
+
     }
 }
