@@ -80,7 +80,7 @@ namespace GoApi.Tests
         {
             // Arrange
             var updateList = new List<UpdateDetail> { new UpdateDetail { Resource = new ResourceUpdateDetail { Id = "", Location = "", Name = "Bob" }, Syntax = null }, new UpdateDetail { Resource = null, Syntax = " updated the Title to ReTestTitle."} };
-            var update = new Update { Id = Guid.NewGuid(), Time = new DateTime(2016, 6, 15, 13, 30, 0), UpdateList = updateList };
+            var update = new Update { UpdatedResourceId = Guid.NewGuid(), Time = new DateTime(2016, 6, 15, 13, 30, 0), UpdateList = updateList };
             var expected = "15/06/2016 13:30: Bob updated the Title to ReTestTitle.";
 
             // Act
