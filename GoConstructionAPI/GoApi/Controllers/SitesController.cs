@@ -73,7 +73,7 @@ namespace GoApi.Controllers
 
         [HttpGet]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-         public IActionResult GetSites()
+        public IActionResult GetSites()
         {
             var oid = _authService.GetRequestOid(Request);
             var sites = _appDbContext.Sites.Where(s => s.Oid == oid && s.IsActive);
