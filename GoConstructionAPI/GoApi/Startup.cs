@@ -61,6 +61,7 @@ namespace GoApi
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddScoped<IUpdateService, UpdateService>();
+            services.AddScoped<IResourceService, ResourceService>();
             services.Configure<IdentityOptions>(options =>
             {
                 options.User.RequireUniqueEmail = true;

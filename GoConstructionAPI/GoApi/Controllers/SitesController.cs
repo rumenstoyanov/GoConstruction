@@ -30,6 +30,7 @@ namespace GoApi.Controllers
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IBackgroundTaskQueue _queue;
         private readonly IUpdateService _updateService;
+        private readonly IResourceService _resourceService;
 
 
         public SitesController(
@@ -39,7 +40,9 @@ namespace GoApi.Controllers
             IAuthService authService,
             IServiceScopeFactory serviceScopeFactory,
             IBackgroundTaskQueue queue,
-            IUpdateService updateService
+            IUpdateService updateService,
+            IResourceService resourceService
+            
             )
         {
             _userManager = userManager;
@@ -49,6 +52,7 @@ namespace GoApi.Controllers
             _serviceScopeFactory = serviceScopeFactory;
             _queue = queue;
             _updateService = updateService;
+            _resourceService = resourceService;
         }
 
         [HttpPost]
@@ -148,5 +152,40 @@ namespace GoApi.Controllers
             }
             return NotFound();
         }
+
+
+        [HttpPost("{siteId}/jobs")]
+        [Authorize(Policy = Seniority.ManagerOrAbovePolicy)]
+        public async Task<IActionResult> PostRootJobs(Guid siteId, RootJobCreateRequestDto model)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId && s.IsActive && s.Oid == oid);
+            if (site != null)
+            {
+                var mappedJob = _mapper.Map<Job>(model);
+
+                var user = await _userManager.GetUserAsync(User);
+                mappedJob.Oid = oid;
+                mappedJob.OwnerId = user.Id;
+                mappedJob.CreatedAt = DateTime.UtcNow;
+                mappedJob.IsActive = true;
+                mappedJob.SiteId = site.Id;
+                mappedJob.FriendlyId = _resourceService.GenerateJobFriendlyId(site);
+                mappedJob.JobStatusId = _resourceService.GetDefaultJobStatusId();
+
+                await _appDbContext.SaveChangesAsync();
+            }
+
+            return NotFound();
+        }
+
+
+        //[HttpGet("{siteId}/jobs")]
+        //[Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        //public async Task<IActionResult> GetRootJobs(Guid siteId)
+        //{
+        //    var oid = _authService.GetRequestOid(Request);
+        //    var jobs = _appDbContext.Jobs.Where(j => j.Oid == oid && j.SiteId == siteId && j.IsActive);
+        //}
     }
 }

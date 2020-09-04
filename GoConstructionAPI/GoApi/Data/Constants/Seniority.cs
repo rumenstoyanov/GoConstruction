@@ -27,7 +27,5 @@ namespace GoApi.Data.Constants
         public const int RandomPasswordLength = 8;
         public const string RandomPasswordRegex = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$";
 
-
-
     }
 }

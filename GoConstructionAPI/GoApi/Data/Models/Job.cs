@@ -36,7 +36,6 @@ namespace GoApi.Data.Models
         [MaxLength(4000)]
         public string Description { get; set; }
         [Required]
-        [MaxLength(16)]
         public string FriendlyId { get; set; }
         [Required]
         public JobStatus JobStatus { get; set; }

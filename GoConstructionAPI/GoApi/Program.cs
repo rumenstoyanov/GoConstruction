@@ -44,11 +44,14 @@ namespace GoApi
                 }
 
                 // Seed job statuses
-                foreach (string status in JobStatuses.StatusList)
+                if (!await appDbContext.JobStatuses.AnyAsync())
                 {
-                    appDbContext.Add(new JobStatus { Title = status });
-                }
-                await appDbContext.SaveChangesAsync();
+                    foreach (string status in JobStatuses.StatusList)
+                    {
+                        appDbContext.Add(new JobStatus { Title = status });
+                    }
+                    await appDbContext.SaveChangesAsync();
+                } 
             }
 
             // Run
