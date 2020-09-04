@@ -20,5 +20,6 @@ namespace GoApi.Data.Models
         public string FullName { get; set; }
 
         public List<Site> Sites { get; set; }
+        public List<Job> Jobs { get; set; }
     }
 }
