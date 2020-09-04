@@ -16,6 +16,7 @@ namespace GoApi.Data.Dtos
         public string Description { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
+        [Required]
         [MaxLength(16)]
         [NoSpaces(ErrorMessage = "Site ID not valid.")]
         public string FriendlyId { get; set; }
