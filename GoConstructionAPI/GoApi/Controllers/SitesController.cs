@@ -165,17 +165,19 @@ namespace GoApi.Controllers
                 var mappedJob = _mapper.Map<Job>(model);
 
                 var user = await _userManager.GetUserAsync(User);
-                mappedJob.Oid = oid;
-                mappedJob.OwnerId = user.Id;
-                mappedJob.CreatedAt = DateTime.UtcNow;
-                mappedJob.IsActive = true;
-                mappedJob.SiteId = site.Id;
-                mappedJob.FriendlyId = _resourceService.GenerateJobFriendlyId(site);
-                mappedJob.JobStatusId = _resourceService.GetDefaultJobStatusId();
-                mappedJob.ParentJobId = null; // Root job so no ParentJobId
+                //mappedJob.Oid = oid;
+                //mappedJob.OwnerId = user.Id;
+                //mappedJob.CreatedAt = DateTime.UtcNow;
+                //mappedJob.IsActive = true;
+                //mappedJob.SiteId = site.Id;
+                //mappedJob.FriendlyId = _resourceService.GenerateJobFriendlyId(site);
+                //mappedJob.JobStatusId = _resourceService.GetDefaultJobStatusId();
+                //mappedJob.ParentJobId = null; // Root job so no ParentJobId
 
-                await _appDbContext.AddAsync(mappedJob);
-                await _appDbContext.SaveChangesAsync();
+                //await _appDbContext.AddAsync(mappedJob);
+                //await _appDbContext.SaveChangesAsync();
+
+                await _resourceService.CreateJobAsync(site, mappedJob, oid, user, true);
 
                 return CreatedAtRoute(nameof(JobsController.GetJobsDetail), new { jobId = mappedJob.Id }, _mapper.Map<JobReadResponseDto>(mappedJob));
             }

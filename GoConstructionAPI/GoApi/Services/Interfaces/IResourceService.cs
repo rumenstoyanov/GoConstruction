@@ -1,4 +1,5 @@
-﻿using GoApi.Data.Models;
+﻿using GoApi.Data.Dtos;
+using GoApi.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +9,6 @@ namespace GoApi.Services.Interfaces
 {
     public interface IResourceService
     {
-        string GenerateJobFriendlyId(Site site);
-
-        public int GetDefaultJobStatusId();
+        Task CreateJobAsync(Site site, Job mappedJob, Guid oid, ApplicationUser user, bool IsRoot);
     }
 }
