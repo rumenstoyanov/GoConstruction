@@ -176,7 +176,8 @@ namespace GoApi.Controllers
 
                 await _appDbContext.AddAsync(mappedJob);
                 await _appDbContext.SaveChangesAsync();
-                return Ok();
+
+                return CreatedAtRoute(nameof(JobsController.GetJobsDetail), new { jobId = mappedJob.Id }, _mapper.Map<JobReadResponseDto>(mappedJob));
             }
 
             return NotFound();
