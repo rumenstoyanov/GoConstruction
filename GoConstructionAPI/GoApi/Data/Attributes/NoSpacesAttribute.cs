@@ -11,7 +11,11 @@ namespace GoApi.Data.Attributes
     {
         public override bool IsValid(object value)
         {
-            return Regex.IsMatch(value.ToString(), @"^[a-zA-Z0-9]*$", RegexOptions.IgnoreCase);
+            if (value != null)
+            {
+                return Regex.IsMatch(value.ToString(), @"^[a-zA-Z0-9]*$", RegexOptions.IgnoreCase);
+            }
+            return false;
         }
     }
 }
