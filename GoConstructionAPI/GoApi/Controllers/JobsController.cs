@@ -59,5 +59,15 @@ namespace GoApi.Controllers
             }
             return NotFound();
         }
+
+        [HttpGet("{jobId}/children")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public IActionResult GetJobChildren(Guid jobId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var jobs = _appDbContext.Jobs.Where(j => j.Oid == oid && j.IsActive && j.ParentJobId.HasValue && j.ParentJobId.Value == jobId);
+            var mappedJobs = _mapper.Map<IEnumerable<JobReadResponseDto>>(jobs);
+            return Ok(mappedJobs);
+        }
     }
 }

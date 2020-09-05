@@ -189,7 +189,7 @@ namespace GoApi.Controllers
         public IActionResult GetRootJobs(Guid siteId)
         {
             var oid = _authService.GetRequestOid(Request);
-            // Need valid oid, siteId, active and a null parentJobId.
+            // Need valid oid, siteId, active and a null parentJobId as seek root jobs only.
             var jobs = _appDbContext.Jobs.Where(j => j.Oid == oid && j.IsActive && j.SiteId == siteId && !j.ParentJobId.HasValue);
             var mappedJobs = _mapper.Map<IEnumerable<JobReadResponseDto>>(jobs);
             return Ok(mappedJobs);
