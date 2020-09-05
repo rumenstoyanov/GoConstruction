@@ -10,10 +10,12 @@ namespace GoApi.Profiles
 {
     public class JobProfile : Profile
     {
-        // Source -> Target
+        
         public JobProfile()
         {
+            // Source -> Target
             CreateMap<RootJobCreateRequestDto, Job>();
+            CreateMap<Job, JobReadResponseDto>();
         }
     }
 }

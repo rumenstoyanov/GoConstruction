@@ -21,7 +21,7 @@ namespace GoApi.Services.Implementations
         }
         public string GenerateJobFriendlyId(Site site)
         {
-            int maxId = site.Jobs.Count;
+            int maxId = _appDbContext.Jobs.Where(j => j.SiteId == site.Id).Count();
             int newId = maxId + 1;
             return $"{site.FriendlyId}-{newId}";
         }

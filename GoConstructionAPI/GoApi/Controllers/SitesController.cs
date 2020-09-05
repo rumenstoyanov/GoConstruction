@@ -156,7 +156,7 @@ namespace GoApi.Controllers
 
         [HttpPost("{siteId}/jobs")]
         [Authorize(Policy = Seniority.ManagerOrAbovePolicy)]
-        public async Task<IActionResult> PostRootJobs(Guid siteId, RootJobCreateRequestDto model)
+        public async Task<IActionResult> PostRootJobs(Guid siteId, [FromBody] RootJobCreateRequestDto model)
         {
             var oid = _authService.GetRequestOid(Request);
             var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId && s.IsActive && s.Oid == oid);
@@ -172,8 +172,11 @@ namespace GoApi.Controllers
                 mappedJob.SiteId = site.Id;
                 mappedJob.FriendlyId = _resourceService.GenerateJobFriendlyId(site);
                 mappedJob.JobStatusId = _resourceService.GetDefaultJobStatusId();
+                mappedJob.ParentJobId = null; // Root job so no ParentJobId
 
+                await _appDbContext.AddAsync(mappedJob);
                 await _appDbContext.SaveChangesAsync();
+                return Ok();
             }
 
             return NotFound();

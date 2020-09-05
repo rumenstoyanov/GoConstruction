@@ -45,7 +45,7 @@ namespace GoApi.Data.Models
         public DateTime DueDate { get; set; }
         public Job ParentJob { get; set; }
         [ForeignKey(nameof(ParentJob))]
-        public Guid ParentJobId { get; set; }
+        public Guid? ParentJobId { get; set; }
 
         public List<Job> Jobs { get; set; }
     }
