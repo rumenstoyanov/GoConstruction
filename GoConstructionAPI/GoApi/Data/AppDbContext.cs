@@ -23,5 +23,7 @@ namespace GoApi.Data
         public DbSet<Organisation> Organisations { get; set; }
         public DbSet<Site> Sites { get; set; }
         public DbSet<Update> Updates { get; set; }
+        public DbSet<JobStatus> JobStatuses { get; set; }
+        public DbSet<Job> Jobs { get; set; }
     }
 }

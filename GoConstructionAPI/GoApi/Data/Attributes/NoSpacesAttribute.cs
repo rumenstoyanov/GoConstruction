@@ -7,16 +7,15 @@ using System.Threading.Tasks;
 
 namespace GoApi.Data.Attributes
 {
-    public class ValidEmailAttribute : ValidationAttribute
+    public class NoSpacesAttribute : ValidationAttribute
     {
         public override bool IsValid(object value)
         {
             if (value != null)
             {
-                return Regex.IsMatch(value.ToString(), @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
+                return Regex.IsMatch(value.ToString(), @"^[a-zA-Z0-9]*$", RegexOptions.IgnoreCase);
             }
             return false;
-            
         }
     }
 }

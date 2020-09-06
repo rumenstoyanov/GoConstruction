@@ -44,6 +44,13 @@ namespace GoApi.Services.Implementations
             await SendMailAsync(user.FullName, user.Email, subject, text);
         }
 
+        public async Task SendJobUpdateAsync(List<ApplicationUser> recepients, Update update, Job job)
+        {
+            string text = Mail.JobUpdate(update.ToString(), job.Title, job.FriendlyId);
+            string subject = Mail.JobUpdateSubject(_mailSettings.SenderName, job.FriendlyId);
+            await SendMailAsync(GetNameAddressPairs(recepients), subject, text);
+        }
+
         public async Task SendMailAsync(string toName, string toAddress, string subject, string text)
         {
             var message = new MimeMessage();

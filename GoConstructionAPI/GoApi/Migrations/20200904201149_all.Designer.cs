@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GoApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20200902211530_update-object-4")]
-    partial class updateobject4
+    [Migration("20200904201149_all")]
+    partial class all
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -95,6 +95,22 @@ namespace GoApi.Migrations
                         .HasName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("GoApi.Data.Models.JobStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("JobStatuses");
                 });
 
             modelBuilder.Entity("GoApi.Data.Models.Organisation", b =>
@@ -342,7 +358,7 @@ namespace GoApi.Migrations
             modelBuilder.Entity("GoApi.Data.Models.Update", b =>
                 {
                     b.HasOne("GoApi.Data.Models.Organisation", "Organisation")
-                        .WithMany()
+                        .WithMany("Updates")
                         .HasForeignKey("Oid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

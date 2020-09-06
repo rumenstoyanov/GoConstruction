@@ -1,24 +1,22 @@
-﻿using GoApi.Data.Attributes;
+﻿using GoApi.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace GoApi.Data.Dtos
 {
-    public class SiteCreateRequestDto
+    public class JobUpdateRequestDto
     {
         [Required]
         [MaxLength(250)]
         public string Title { get; set; }
         [MaxLength(4000)]
         public string Description { get; set; }
+        public DateTime DueDate { get; set; }
         [Required]
-        public DateTime EndDate { get; set; }
-        [Required]
-        [MaxLength(16)]
-        [NoSpaces(ErrorMessage = "Site ID not valid.")]
-        public string FriendlyId { get; set; }
+        public int JobStatusId { get; set; }
     }
 }

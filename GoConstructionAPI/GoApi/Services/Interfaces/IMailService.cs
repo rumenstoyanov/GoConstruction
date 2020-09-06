@@ -13,6 +13,7 @@ namespace GoApi.Services.Interfaces
         Task SendConfirmationEmailContractorAsync(Organisation org, ApplicationUser user, string confirmationLink);
         Task SendConfirmationEmailAndPasswordNonContractorAsync(Organisation org, ApplicationUser user, ApplicationUser inviter, string seniority, string confirmationLink, string password);
         Task SendResetPasswordEmailAsync(ApplicationUser user, string newPassword);
+        Task SendJobUpdateAsync(List<ApplicationUser> recepients, Update update, Job job);
         Task SendSiteUpdateAsync(List<ApplicationUser> recepients, Update update, Site site);
         Dictionary<string, string> GetNameAddressPairs(List<ApplicationUser> recepients);
     }

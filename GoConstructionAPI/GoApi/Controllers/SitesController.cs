@@ -30,6 +30,7 @@ namespace GoApi.Controllers
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IBackgroundTaskQueue _queue;
         private readonly IUpdateService _updateService;
+        private readonly IResourceService _resourceService;
 
 
         public SitesController(
@@ -39,7 +40,9 @@ namespace GoApi.Controllers
             IAuthService authService,
             IServiceScopeFactory serviceScopeFactory,
             IBackgroundTaskQueue queue,
-            IUpdateService updateService
+            IUpdateService updateService,
+            IResourceService resourceService
+            
             )
         {
             _userManager = userManager;
@@ -49,6 +52,7 @@ namespace GoApi.Controllers
             _serviceScopeFactory = serviceScopeFactory;
             _queue = queue;
             _updateService = updateService;
+            _resourceService = resourceService;
         }
 
         [HttpPost]
@@ -125,7 +129,8 @@ namespace GoApi.Controllers
                 {
                     return ValidationProblem(ModelState);
                 }
-                var update = _updateService.GetSiteUpdate(await _userManager.GetUserAsync(User), site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch);
+                var user = await _userManager.GetUserAsync(User);
+                var update = _updateService.GetResourceUpdate(user, site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch, _resourceService.GetUserDetailLocation(Url, Request, user));
                 _mapper.Map(siteToPatch, site);
 
                 if (update != null)
@@ -147,6 +152,39 @@ namespace GoApi.Controllers
                 return NoContent();
             }
             return NotFound();
+        }
+
+
+        [HttpPost("{siteId}/jobs")]
+        [Authorize(Policy = Seniority.ManagerOrAbovePolicy)]
+        public async Task<IActionResult> PostRootJobs(Guid siteId, [FromBody] RootJobCreateRequestDto model)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId && s.IsActive && s.Oid == oid);
+            if (site != null)
+            {
+                var mappedJob = _mapper.Map<Job>(model);
+
+                var user = await _userManager.GetUserAsync(User);
+
+                await _resourceService.CreateJobAsync(site, mappedJob, oid, user, true);
+
+                return CreatedAtRoute(nameof(JobsController.GetJobsDetail), new { jobId = mappedJob.Id }, _mapper.Map<JobReadResponseDto>(mappedJob));
+            }
+
+            return NotFound();
+        }
+
+
+        [HttpGet("{siteId}/jobs")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public IActionResult GetRootJobs(Guid siteId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            // Need valid oid, siteId, active and a null parentJobId as seek root jobs only.
+            var jobs = _appDbContext.Jobs.Where(j => j.Oid == oid && j.IsActive && j.SiteId == siteId && !j.ParentJobId.HasValue);
+            var mappedJobs = _mapper.Map<IEnumerable<JobReadResponseDto>>(jobs);
+            return Ok(mappedJobs);
         }
     }
 }

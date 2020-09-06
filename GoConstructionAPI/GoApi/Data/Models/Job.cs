@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GoApi.Data.Models
 {
-    public class Site
+    public class Job
     {
         [Key]
         public Guid Id { get; set; }
@@ -19,22 +19,33 @@ namespace GoApi.Data.Models
         [Required]
         public bool IsActive { get; set; }
         [Required]
+        public Site Site { get; set; }
+        [Required]
+        [ForeignKey(nameof(Site))]
+        public Guid SiteId { get; set; }
+        [Required]
+        public ApplicationUser Owner { get; set; }
+        [Required]
+        [ForeignKey(nameof(Owner))]
+        public string OwnerId { get; set; }
+        [Required]
         public DateTime CreatedAt { get; set; }
-        [Required]
-        public ApplicationUser CreatedByUser { get; set; }
-        [Required]
-        [ForeignKey(nameof(CreatedByUser))]
-        public string CreatedByUserId { get; set; }
         [Required]
         [MaxLength(250)]
         public string Title { get; set; }
         [MaxLength(4000)]
         public string Description { get; set; }
         [Required]
-        public DateTime EndDate { get; set; }
-        [Required]
-        [MaxLength(16)]
         public string FriendlyId { get; set; }
+        [Required]
+        public JobStatus JobStatus { get; set; }
+        [Required]
+        [ForeignKey(nameof(JobStatus))]
+        public int JobStatusId { get; set; }
+        public DateTime DueDate { get; set; }
+        public Job ParentJob { get; set; }
+        [ForeignKey(nameof(ParentJob))]
+        public Guid? ParentJobId { get; set; }
 
         public List<Job> Jobs { get; set; }
     }

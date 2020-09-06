@@ -25,6 +25,7 @@ namespace GoApi.Data.Models
 
         public List<Site> Sites { get; set; }
         public List<Update> Updates { get; set; }
+        public List<Job> Jobs { get; set; }
 
 
     } 

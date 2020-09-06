@@ -2,7 +2,7 @@
 
 namespace GoApi.Migrations
 {
-    public partial class updateobject6 : Migration
+    public partial class jobobjectmod2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

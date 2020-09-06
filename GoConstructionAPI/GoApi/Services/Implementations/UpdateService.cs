@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GoApi.Data.Constants;
+using Microsoft.AspNetCore.Mvc;
+using GoApi.Controllers;
 
 namespace GoApi.Services.Implementations
 {
@@ -13,7 +16,7 @@ namespace GoApi.Services.Implementations
     {
         public string AssembleSyntaxFromDiff(Dictionary<string, string> diff)
         {
-           
+
             var sb = new StringBuilder();
             foreach (var key in diff.Keys.SkipLast(1))
             {
@@ -41,25 +44,38 @@ namespace GoApi.Services.Implementations
 
         }
 
-        // If there is no update, then returns null.
-        public Update GetSiteUpdate(ApplicationUser user, Site site, SiteUpdateRequestDto preUpdate, SiteUpdateRequestDto postUpdate)
+
+        public Update GetResourceUpdate<T, U>(ApplicationUser user, T resource, U preUpdate, U postUpdate, string userDetailLocation)
+            where T : class
+            where U : class
         {
             var diff = Diff(preUpdate, postUpdate);
             if (diff.Any())
             {
                 var syntax = AssembleSyntaxFromDiff(diff);
-                var update = new Update { UpdatedResourceId = site.Id, Time = DateTime.UtcNow, Oid = site.Oid };
-                update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = "api/Organisation/users/", Name = user.FullName }, Syntax = null });
+                var update = new Update
+                {
+                    UpdatedResourceId = Guid.Parse(resource.GetType().GetProperty(FixedPropertyNames.PrimaryKey).GetValue(resource).ToString()),
+                    Time = DateTime.UtcNow,
+                    Oid = Guid.Parse(resource.GetType().GetProperty(FixedPropertyNames.OrganisationId).GetValue(resource).ToString())
+                };
+                update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = userDetailLocation, Name = user.FullName }, Syntax = null });
                 update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = syntax });
                 return update;
             }
             return null;
-            
         }
 
         public List<ApplicationUser> GetSiteUpdateRecipients(Site site)
         {
             return new List<ApplicationUser> { site.CreatedByUser };
+            
         }
-    }
+
+        public List<ApplicationUser> GetJobUpdateRecipients(Job job)
+        {
+
+            return new List<ApplicationUser> { job.Owner };
+        }
+    } 
 }

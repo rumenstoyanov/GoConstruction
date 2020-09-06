@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using static GoApi.Data.Constants.Seniority;
+using GoApi.Data.Constants;
 
 namespace GoApi
 {
@@ -41,6 +42,16 @@ namespace GoApi
                         await roleManager.CreateAsync(idRole);
                     }
                 }
+
+                // Seed job statuses
+                if (!await appDbContext.JobStatuses.AnyAsync())
+                {
+                    foreach (string status in JobStatuses.StatusList)
+                    {
+                        appDbContext.Add(new JobStatus { Title = status });
+                    }
+                    await appDbContext.SaveChangesAsync();
+                } 
             }
 
             // Run

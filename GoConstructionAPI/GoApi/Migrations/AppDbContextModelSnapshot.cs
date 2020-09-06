@@ -95,6 +95,81 @@ namespace GoApi.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("GoApi.Data.Models.Job", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("character varying(4000)")
+                        .HasMaxLength(4000);
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("FriendlyId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("JobStatusId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("Oid")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ParentJobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("character varying(250)")
+                        .HasMaxLength(250);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobStatusId");
+
+                    b.HasIndex("Oid");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("ParentJobId");
+
+                    b.HasIndex("SiteId");
+
+                    b.ToTable("Jobs");
+                });
+
+            modelBuilder.Entity("GoApi.Data.Models.JobStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("JobStatuses");
+                });
+
             modelBuilder.Entity("GoApi.Data.Models.Organisation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -320,6 +395,37 @@ namespace GoApi.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("GoApi.Data.Models.Job", b =>
+                {
+                    b.HasOne("GoApi.Data.Models.JobStatus", "JobStatus")
+                        .WithMany("Jobs")
+                        .HasForeignKey("JobStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GoApi.Data.Models.Organisation", "Organisation")
+                        .WithMany("Jobs")
+                        .HasForeignKey("Oid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GoApi.Data.Models.ApplicationUser", "Owner")
+                        .WithMany("Jobs")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GoApi.Data.Models.Job", "ParentJob")
+                        .WithMany("Jobs")
+                        .HasForeignKey("ParentJobId");
+
+                    b.HasOne("GoApi.Data.Models.Site", "Site")
+                        .WithMany("Jobs")
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("GoApi.Data.Models.Site", b =>

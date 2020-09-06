@@ -19,6 +19,7 @@ using System.Security.Policy;
 using GoApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using GoApi.Controllers;
 
 namespace GoApi.Services.Implementations
 {
