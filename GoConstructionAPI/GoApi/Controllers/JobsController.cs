@@ -11,8 +11,10 @@ using GoApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GoApi.Controllers
 {
@@ -53,7 +55,6 @@ namespace GoApi.Controllers
             return Ok(mappedJobs);
 
         }
-
 
         [HttpGet("{jobId}", Name = nameof(GetJobsDetail))]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
@@ -98,6 +99,71 @@ namespace GoApi.Controllers
             }
             return NotFound();
         }
+
+        [HttpDelete("{jobId}")]
+        [Authorize(Policy = Seniority.ManagerOrAbovePolicy)]
+        public async Task<IActionResult> DeleteJobs(Guid jobId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                job.IsActive = false;
+                await _appDbContext.SaveChangesAsync();
+                return NoContent();
+            }
+            return NotFound();
+        }
+
+        [HttpPatch("{jobId}")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public async Task<IActionResult> PatchJobs(Guid jobId, [FromBody] JsonPatchDocument<JobUpdateRequestDto> patchDoc)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                var jobToPatch = _mapper.Map<JobUpdateRequestDto>(job);
+                patchDoc.ApplyTo(jobToPatch, ModelState);
+                if (!TryValidateModel(jobToPatch))
+                {
+                    return ValidationProblem(ModelState);
+                }
+                // Case of non-foreign key JobStatusId.
+                if (!await _appDbContext.JobStatuses.AnyAsync(js => js.Id == jobToPatch.JobStatusId))
+                {
+                    string errorKey = nameof(jobToPatch.JobStatusId);
+                    ModelState.AddModelError(errorKey, $"Invalid {errorKey}.");
+                    return ValidationProblem(ModelState);
+                }
+
+                _mapper.Map(jobToPatch, job);
+                await _appDbContext.SaveChangesAsync();
+                return NoContent();
+                
+                //var update = _updateService.GetSiteUpdate(await _userManager.GetUserAsync(User), site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch);
+                
+
+                //if (update != null)
+                //{
+                //    _appDbContext.Add(update);
+
+                //    _queue.QueueBackgroundWorkItem(async token =>
+                //    {
+                //        using (var scope = _serviceScopeFactory.CreateScope())
+                //        {
+                //            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                //            var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
+                //            var recepients = updateService.GetSiteUpdateRecipients(site);
+                //            await mailService.SendSiteUpdateAsync(recepients, update, site);
+                //        }
+                //    });
+                //}
+
+            }
+            return NotFound();
+        }
+
 
     }
 }

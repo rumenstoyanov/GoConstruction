@@ -41,6 +41,25 @@ namespace GoApi.Services.Implementations
 
         }
 
+        //private Update GetResourceUpdate<T,U>(ApplicationUser user, T resource, U preUpdate, U postUpdate, string resourceLocation) where T : class where U : class
+        //{
+        //    var diff = Diff(preUpdate, postUpdate);
+        //    if (diff.Any())
+        //    {
+        //        var syntax = AssembleSyntaxFromDiff(diff);
+        //        var update = new Update { UpdatedResourceId = Guid.Parse(resource.GetType().GetProperty("Id").GetValue(resource)), Time = DateTime.UtcNow, Oid = resource.Oid };
+        //        update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = "api/Organisation/users/", Name = user.FullName }, Syntax = null });
+        //        update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = syntax });
+        //        return update;
+        //    }
+        //    return null;
+        //}
+
+        public Update GetJobUpdate(ApplicationUser user, Job site, JobUpdateRequestDto preUpdate, JobUpdateRequestDto postUpdate)
+        {
+            throw new NotImplementedException();
+        }
+
         // If there is no update, then returns null.
         public Update GetSiteUpdate(ApplicationUser user, Site site, SiteUpdateRequestDto preUpdate, SiteUpdateRequestDto postUpdate)
         {

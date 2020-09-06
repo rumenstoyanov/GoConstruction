@@ -17,6 +17,8 @@ namespace GoApi.Services.Interfaces
 
         List<ApplicationUser> GetSiteUpdateRecipients(Site site);
 
+        Update GetJobUpdate(ApplicationUser user, Job site, JobUpdateRequestDto preUpdate, JobUpdateRequestDto postUpdate);
+
 
 
     }
