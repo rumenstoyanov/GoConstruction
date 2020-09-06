@@ -17,8 +17,7 @@ namespace GoApi.Services.Interfaces
         List<ApplicationUser> GetSiteUpdateRecipients(Site site);
 
         /// <summary>
-        /// If there is no update, then returns null.
-        /// A resource is a Site or Job.
+        /// A resource here is a Site or Job. If there is no update, then returns null.
         /// </summary>
         /// <param name="userDetailLocation">Url for the detail of the user performing the update - to be used in hyperlinks on FE.</param>
         /// <returns></returns>
@@ -26,6 +25,7 @@ namespace GoApi.Services.Interfaces
             where T : class
             where U : class;
 
+        List<ApplicationUser> GetJobUpdateRecipients(Job job);
 
 
     }

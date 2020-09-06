@@ -1,7 +1,13 @@
-﻿using GoApi.Data;
+﻿using AutoMapper;
+using GoApi.Controllers;
+using GoApi.Data;
 using GoApi.Data.Constants;
+using GoApi.Data.Dtos;
 using GoApi.Data.Models;
 using GoApi.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,10 +20,12 @@ namespace GoApi.Services.Implementations
     public class ResourceService : IResourceService
     {
         private readonly AppDbContext _appDbContext;
+        private readonly IMapper _mapper;
 
-        public ResourceService(AppDbContext appDbContext)
+        public ResourceService(AppDbContext appDbContext, IMapper mapper)
         {
             _appDbContext = appDbContext;
+            _mapper = mapper;
         }
 
         public async Task CreateJobAsync(Site site, Job mappedJob, Guid oid, ApplicationUser user, bool IsRoot)
@@ -50,6 +58,19 @@ namespace GoApi.Services.Implementations
             var defaultStatus = _appDbContext.JobStatuses.SingleOrDefault(js => js.Title == JobStatuses.DefaultStatus);
             return defaultStatus.Id;
 
+        }
+
+        public string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, ApplicationUser user)
+        {
+            var location = Url.Action(nameof(OrganisationController.GetUsersDetail), "Organisation", new { userId = user.Id }, Request.Scheme);
+            return location;
+        }
+
+        public JobUpdateInternalDto GetJobUpdateFriendly(JobUpdateRequestDto dto)
+        {
+            var mappedDto = _mapper.Map<JobUpdateInternalDto>(dto);
+            mappedDto.Status = _appDbContext.JobStatuses.FirstOrDefault(js => js.Id == dto.JobStatusId).Title;
+            return mappedDto;
         }
     }
 }

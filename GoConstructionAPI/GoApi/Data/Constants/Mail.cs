@@ -23,6 +23,11 @@ namespace GoApi.Data.Constants
             return $"Site {siteFriendlyId} Update ({myCompanyName})";
         }
 
+        public static string JobUpdateSubject(string myCompanyName, string jobFriendlyId)
+        {
+            return $"Job {jobFriendlyId} Update ({myCompanyName})";
+        }
+
         private static string Salutation(string myCompanyName)
         {
             string outString = @$"
@@ -72,6 +77,13 @@ If you did not make this request please contact support <EMAIL HERE>.
             return outString;
         }
 
+        public static string JobUpdate(string update, string jobTitle, string jobFriendlyId)
+        {
+            string outString = @$"Job {jobFriendlyId} - {jobTitle}
 
+{update}
+";
+            return outString;
+        }
     }
 }

@@ -69,18 +69,13 @@ namespace GoApi.Services.Implementations
         public List<ApplicationUser> GetSiteUpdateRecipients(Site site)
         {
             return new List<ApplicationUser> { site.CreatedByUser };
+            
         }
 
-        //public Update GetJobUpdate(ApplicationUser user, Job site, JobUpdateRequestDto preUpdate, JobUpdateRequestDto postUpdate, string userDetailLocation)
-        //{
+        public List<ApplicationUser> GetJobUpdateRecipients(Job job)
+        {
 
-        //    throw new NotImplementedException();
-        //}
-
-
-        //public Update GetSiteUpdate(ApplicationUser user, Site site, SiteUpdateRequestDto preUpdate, SiteUpdateRequestDto postUpdate, string userDetailLocation)
-        //{
-        //    return GetResourceUpdate(user, site, preUpdate, postUpdate, userDetailLocation);
-
+            return new List<ApplicationUser> { job.Owner };
+        }
     } 
 }

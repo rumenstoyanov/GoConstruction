@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoApi.Controllers
 {
@@ -28,12 +29,18 @@ namespace GoApi.Controllers
         private readonly IAuthService _authService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IResourceService _resourceService;
+        private readonly IUpdateService _updateService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IBackgroundTaskQueue _queue;
         public JobsController(
             AppDbContext appDbContext,
             IMapper mapper,
             IAuthService authService,
             UserManager<ApplicationUser> userManager,
-            IResourceService resourceService
+            IResourceService resourceService,
+            IUpdateService updateService,
+            IServiceScopeFactory serviceScopeFactory,
+            IBackgroundTaskQueue queue
             )
         {
             _appDbContext = appDbContext;
@@ -41,6 +48,9 @@ namespace GoApi.Controllers
             _authService = authService;
             _userManager = userManager;
             _resourceService = resourceService;
+            _updateService = updateService;
+            _serviceScopeFactory = serviceScopeFactory;
+            _queue = queue;
         }
 
 
@@ -137,28 +147,33 @@ namespace GoApi.Controllers
                     return ValidationProblem(ModelState);
                 }
 
+                var user = await _userManager.GetUserAsync(User);
+                var update = _updateService.GetResourceUpdate(
+                    user, 
+                    job, 
+                    _resourceService.GetJobUpdateFriendly(_mapper.Map<JobUpdateRequestDto>(job)),
+                    _resourceService.GetJobUpdateFriendly(jobToPatch), 
+                    _resourceService.GetUserDetailLocation(Url, Request, user)
+                    );
                 _mapper.Map(jobToPatch, job);
+
+                if (update != null)
+                {
+                    _appDbContext.Add(update);
+
+                    _queue.QueueBackgroundWorkItem(async token =>
+                    {
+                        using (var scope = _serviceScopeFactory.CreateScope())
+                        {
+                            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                            var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
+                            var recepients = updateService.GetJobUpdateRecipients(job);
+                            await mailService.SendJobUpdateAsync(recepients, update, job);
+                        }
+                    });
+                }
                 await _appDbContext.SaveChangesAsync();
                 return NoContent();
-                
-                //var update = _updateService.GetSiteUpdate(await _userManager.GetUserAsync(User), site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch);
-                
-
-                //if (update != null)
-                //{
-                //    _appDbContext.Add(update);
-
-                //    _queue.QueueBackgroundWorkItem(async token =>
-                //    {
-                //        using (var scope = _serviceScopeFactory.CreateScope())
-                //        {
-                //            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
-                //            var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
-                //            var recepients = updateService.GetSiteUpdateRecipients(site);
-                //            await mailService.SendSiteUpdateAsync(recepients, update, site);
-                //        }
-                //    });
-                //}
 
             }
             return NotFound();

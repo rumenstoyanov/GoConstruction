@@ -19,6 +19,7 @@ namespace GoApi.Profiles
             CreateMap<NonRootJobCreateRequestDto, Job>();
             CreateMap<JobUpdateRequestDto, Job>();
             CreateMap<Job, JobUpdateRequestDto>();
+            CreateMap<JobUpdateRequestDto, JobUpdateInternalDto>();
         }
     }
 }

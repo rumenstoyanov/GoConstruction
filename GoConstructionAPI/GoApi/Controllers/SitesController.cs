@@ -130,7 +130,7 @@ namespace GoApi.Controllers
                     return ValidationProblem(ModelState);
                 }
                 var user = await _userManager.GetUserAsync(User);
-                var update = _updateService.GetResourceUpdate(user, site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch, _authService.GetUserDetailLocation(Url, Request, user));
+                var update = _updateService.GetResourceUpdate(user, site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch, _resourceService.GetUserDetailLocation(Url, Request, user));
                 _mapper.Map(siteToPatch, site);
 
                 if (update != null)

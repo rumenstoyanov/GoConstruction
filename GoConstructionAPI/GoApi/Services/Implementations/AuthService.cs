@@ -84,12 +84,6 @@ namespace GoApi.Services.Implementations
             return Guid.Parse(oid);
         }
 
-        public string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, ApplicationUser user)
-        {
-            var location = Url.Action(nameof(OrganisationController.GetUsersDetail), "Organisation", new { userId = user.Id }, Request.Scheme);
-            return location;
-        }
-
         public async Task<IEnumerable<ApplicationUser>> GetValidUsersAsync(Guid oid)
         {
             return (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive && u.EmailConfirmed);
