@@ -179,6 +179,14 @@ namespace GoApi.Controllers
             return NotFound();
         }
 
+        [HttpGet("statuses")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public IActionResult GetJobStatuses()
+        {
+            return Ok(_mapper.Map<IEnumerable<JobStatusReadResponseDto>>(_appDbContext.JobStatuses));
+        }
+
+
 
     }
 }
