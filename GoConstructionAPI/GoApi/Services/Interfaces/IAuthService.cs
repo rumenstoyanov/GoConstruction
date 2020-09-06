@@ -22,5 +22,7 @@ namespace GoApi.Services.Interfaces
         string GeneratePassword();
 
         Task<AuthInternalDto> RegisterNonContractorAsync(RegisterNonContractorRequestDto model, HttpRequest Request, ClaimsPrincipal User, IUrlHelper Url, string seniority);
+
+        string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, ApplicationUser user);
     }
 }

@@ -129,7 +129,7 @@ namespace GoApi.Controllers
                 {
                     return ValidationProblem(ModelState);
                 }
-                // Case of non-foreign key JobStatusId.
+                // Case of a non-foreign key JobStatusId.
                 if (!await _appDbContext.JobStatuses.AnyAsync(js => js.Id == jobToPatch.JobStatusId))
                 {
                     string errorKey = nameof(jobToPatch.JobStatusId);

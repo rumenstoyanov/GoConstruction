@@ -19,6 +19,7 @@ using System.Security.Policy;
 using GoApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using GoApi.Controllers;
 
 namespace GoApi.Services.Implementations
 {
@@ -81,6 +82,12 @@ namespace GoApi.Services.Implementations
             var token = handler.ReadJwtToken(jwt);
             string oid = token.Claims.Where(c => c.Type == Seniority.OrganisationIdClaimKey).ToList().First().Value;
             return Guid.Parse(oid);
+        }
+
+        public string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, ApplicationUser user)
+        {
+            var location = Url.Action(nameof(OrganisationController.GetUsersDetail), "Organisation", new { userId = user.Id }, Request.Scheme);
+            return location;
         }
 
         public async Task<IEnumerable<ApplicationUser>> GetValidUsersAsync(Guid oid)

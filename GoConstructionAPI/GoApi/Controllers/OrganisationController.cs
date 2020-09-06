@@ -69,7 +69,6 @@ namespace GoApi.Controllers
                 mappedUser.Position = (await _userManager.GetRolesAsync(user)).First();
                 mappedUsers.Add(mappedUser);
             }
-
             return Ok(mappedUsers);
         }
 
