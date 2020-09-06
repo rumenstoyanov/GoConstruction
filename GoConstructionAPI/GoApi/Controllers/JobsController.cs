@@ -187,6 +187,53 @@ namespace GoApi.Controllers
             return Ok(_mapper.Map<IEnumerable<JobStatusReadResponseDto>>(_appDbContext.JobStatuses));
         }
 
+        [HttpGet("{jobId}/assignees")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public async Task<IActionResult> GetAssignees(Guid jobId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                var assignees = new List<AbridgedUserInfoResponseDto>();
+                foreach (var uj in _resourceService.GetUserIdsForValidJob(jobId))
+                {
+                    var mappedUser = _mapper.Map<AbridgedUserInfoResponseDto>(await _userManager.FindByIdAsync(uj.UserId));
+                    mappedUser.Location = _resourceService.GetUserDetailLocation(Url, Request, uj.UserId);
+                    assignees.Add(mappedUser);
+                }
+                return Ok(assignees);
+            }
+            return NotFound();
+        }
+
+        [HttpPost("{jobId}/assignees")]
+        [Authorize(Policy = Seniority.SupervisorOrAbovePolicy)]
+        public async Task<IActionResult> PostAssignees(Guid jobId, [FromBody] AddAssigneeRequestDto assignee)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                if ((await _authService.GetValidUsersAsync(oid)).Any(u => u.Id == assignee.UserId))
+                {
+                    if (!_resourceService.GetUserIdsForValidJob(jobId).Any(uj => uj.UserId == assignee.UserId))
+                    {
+                        _appDbContext.Assignments.Add(new UserJob { UserId = assignee.UserId, JobId = jobId });
+                        await _appDbContext.SaveChangesAsync();
+                    }
+                    return Ok();
+                }
+            }
+            return NotFound();
+        }
+
+        [HttpDelete("{jobId}/assignees")]
+        [Authorize(Policy = Seniority.SupervisorOrAbovePolicy)]
+        public async Task<IActionResult> DeleteAssignees(Guid jobId, [FromBody] string userId)
+        {
+            throw new NotImplementedException();
+        }
 
 
     }

@@ -16,5 +16,7 @@ namespace GoApi.Services.Interfaces
         string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, string userId);
 
         JobUpdateInternalDto GetJobUpdateFriendly(JobUpdateRequestDto dto);
+
+        IEnumerable<UserJob> GetUserIdsForValidJob(Guid jobId);
     }
 }

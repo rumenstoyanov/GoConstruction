@@ -72,5 +72,10 @@ namespace GoApi.Services.Implementations
             mappedDto.Status = _appDbContext.JobStatuses.FirstOrDefault(js => js.Id == dto.JobStatusId).Title;
             return mappedDto;
         }
+
+        public IEnumerable<UserJob> GetUserIdsForValidJob(Guid jobId)
+        {
+            return _appDbContext.Assignments.Where(uj => uj.JobId == jobId);
+        }
     }
 }
