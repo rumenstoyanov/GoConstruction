@@ -129,6 +129,7 @@ namespace GoApi.Controllers
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
         public async Task<IActionResult> PatchJobs(Guid jobId, [FromBody] JsonPatchDocument<JobUpdateRequestDto> patchDoc)
         {
+            // Anybody can patch a job but only Supervisors and above can change assignees. 
             var oid = _authService.GetRequestOid(Request);
             var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
             if (job != null)
@@ -153,7 +154,7 @@ namespace GoApi.Controllers
                     job, 
                     _resourceService.GetJobUpdateFriendly(_mapper.Map<JobUpdateRequestDto>(job)),
                     _resourceService.GetJobUpdateFriendly(jobToPatch), 
-                    _resourceService.GetUserDetailLocation(Url, Request, user)
+                    _resourceService.GetUserDetailLocation(Url, Request, user.Id)
                     );
                 _mapper.Map(jobToPatch, job);
 

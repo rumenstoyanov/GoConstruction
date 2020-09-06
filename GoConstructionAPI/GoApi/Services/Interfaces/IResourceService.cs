@@ -13,7 +13,7 @@ namespace GoApi.Services.Interfaces
     {
         Task CreateJobAsync(Site site, Job mappedJob, Guid oid, ApplicationUser user, bool IsRoot);
 
-        string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, ApplicationUser user);
+        string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, string userId);
 
         JobUpdateInternalDto GetJobUpdateFriendly(JobUpdateRequestDto dto);
     }

@@ -15,7 +15,8 @@ namespace GoApi.Profiles
         public ApplicationUserProfile()
         {
             // Source -> Target
-            CreateMap<ApplicationUser, ApplicationUserInfoResponseDto>();
+            CreateMap<ApplicationUser, UserInfoResponseDto>();
+            CreateMap<ApplicationUser, AbridgedUserInfoResponseDto>();
         }
     }
 }
