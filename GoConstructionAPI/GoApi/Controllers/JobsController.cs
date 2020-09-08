@@ -234,9 +234,22 @@ namespace GoApi.Controllers
 
         [HttpDelete("{jobId}/assignees")]
         [Authorize(Policy = Seniority.SupervisorOrAbovePolicy)]
-        public async Task<IActionResult> DeleteAssignees(Guid jobId, [FromBody] string userId)
+        public async Task<IActionResult> DeleteAssignees(Guid jobId, [FromBody] AddAssigneeRequestDto assignee)
         {
-            throw new NotImplementedException();
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                var assignment = await _appDbContext.Assignments.FirstOrDefaultAsync(uj => uj.JobId == jobId && uj.UserId == assignee.UserId);
+                if (assignment != null)
+                {
+                    _appDbContext.Assignments.Remove(assignment);
+                    await _appDbContext.SaveChangesAsync();
+                    return NoContent();
+                }
+
+            }
+            return NotFound();
         }
 
 
