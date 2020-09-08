@@ -86,7 +86,7 @@ namespace GoApi.Services.Implementations
             update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = userDetailLocation, Name = user.FullName }, Syntax = null });
             update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = isAddition ? " assigned the job to " : " removed " });
             update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = updatedUser.Id, Location = updatedUserDetailLocation, Name = updatedUser.FullName }, Syntax = null });
-            update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = isAddition ? "." : " from the assignees."  });
+            update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = isAddition ? "." : " from the assignees for this job."  });
             return update;
         }
 
@@ -96,7 +96,7 @@ namespace GoApi.Services.Implementations
             
         }
 
-        public async Task<IEnumerable<ApplicationUser>> GetJobUpdateRecipients(Job job)
+        public async Task<IEnumerable<ApplicationUser>> GetJobUpdateRecipientsAsync(Job job)
         {
             var outList = new List<ApplicationUser>();
             foreach (var uj in _resourceService.GetAssigneeUserIdsForValidJob(job.Id).ToList())

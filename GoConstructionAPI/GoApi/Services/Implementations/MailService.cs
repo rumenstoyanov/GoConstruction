@@ -19,7 +19,7 @@ namespace GoApi.Services.Implementations
             _mailSettings = mailSettings;
         }
 
-        public Dictionary<string, string> GetNameAddressPairs(List<ApplicationUser> recepients)
+        public Dictionary<string, string> GetNameAddressPairs(IEnumerable<ApplicationUser> recepients)
         {
             var outDict = new Dictionary<string, string>();
             foreach (var r in recepients)
@@ -44,7 +44,7 @@ namespace GoApi.Services.Implementations
             await SendMailAsync(user.FullName, user.Email, subject, text);
         }
 
-        public async Task SendJobUpdateAsync(List<ApplicationUser> recepients, Update update, Job job)
+        public async Task SendJobUpdateAsync(IEnumerable<ApplicationUser> recepients, Update update, Job job)
         {
             string text = Mail.JobUpdate(update.ToString(), job.Title, job.FriendlyId);
             string subject = Mail.JobUpdateSubject(_mailSettings.SenderName, job.FriendlyId);
@@ -92,7 +92,7 @@ namespace GoApi.Services.Implementations
             await SendMailAsync(user.FullName, user.Email, subject, text);
         }
 
-        public async Task SendSiteUpdateAsync(List<ApplicationUser> recepients, Update update, Site site)
+        public async Task SendSiteUpdateAsync(IEnumerable<ApplicationUser> recepients, Update update, Site site)
         {
             string text = Mail.SiteUpdate(update.ToString(), site.Title, site.FriendlyId);
             string subject = Mail.SiteUpdateSubject(_mailSettings.SenderName, site.FriendlyId);

@@ -168,7 +168,7 @@ namespace GoApi.Controllers
                         {
                             var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
                             var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
-                            var recepients = updateService.GetJobUpdateRecipients(job);
+                            var recepients = await updateService.GetJobUpdateRecipientsAsync(job);
                             await mailService.SendJobUpdateAsync(recepients, update, job);
                         }
                     });
@@ -224,6 +224,31 @@ namespace GoApi.Controllers
                     if (!_resourceService.GetAssigneeUserIdsForValidJob(jobId).Any(uj => uj.UserId == assignee.UserId))
                     {
                         _appDbContext.Assignments.Add(new UserJob { UserId = assignee.UserId, JobId = jobId });
+
+                        var user = await _userManager.GetUserAsync(User);
+                        var updatedUser = await _userManager.FindByIdAsync(assignee.UserId);
+
+                        var update = _updateService.GetAssigneeUpdate(
+                            user,
+                            job,
+                            updatedUser,
+                            _resourceService.GetUserDetailLocation(Url, Request, user.Id),
+                            _resourceService.GetUserDetailLocation(Url, Request, updatedUser.Id),
+                            true
+                            );
+                        _appDbContext.Add(update);
+
+                        _queue.QueueBackgroundWorkItem(async token =>
+                        {
+                            using (var scope = _serviceScopeFactory.CreateScope())
+                            {
+                                var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                                var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
+                                var recepients = await updateService.GetJobUpdateRecipientsAsync(job);
+                                await mailService.SendJobUpdateAsync(recepients, update, job);
+                            }
+                        });
+
                         await _appDbContext.SaveChangesAsync();
                     }
                     return Ok();
@@ -244,6 +269,32 @@ namespace GoApi.Controllers
                 if (assignment != null)
                 {
                     _appDbContext.Assignments.Remove(assignment);
+
+
+                    var user = await _userManager.GetUserAsync(User);
+                    var updatedUser = await _userManager.FindByIdAsync(assignee.UserId);
+
+                    var update = _updateService.GetAssigneeUpdate(
+                        user,
+                        job,
+                        updatedUser,
+                        _resourceService.GetUserDetailLocation(Url, Request, user.Id),
+                        _resourceService.GetUserDetailLocation(Url, Request, updatedUser.Id),
+                        false
+                        );
+                    _appDbContext.Add(update);
+
+                    _queue.QueueBackgroundWorkItem(async token =>
+                    {
+                        using (var scope = _serviceScopeFactory.CreateScope())
+                        {
+                            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                            var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
+                            var recepients = await updateService.GetJobUpdateRecipientsAsync(job);
+                            await mailService.SendJobUpdateAsync(recepients, update, job);
+                        }
+                    });
+
                     await _appDbContext.SaveChangesAsync();
                     return NoContent();
                 }
