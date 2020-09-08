@@ -196,11 +196,15 @@ namespace GoApi.Controllers
             if (job != null)
             {
                 var assignees = new List<AbridgedUserInfoResponseDto>();
-                foreach (var uj in _resourceService.GetUserIdsForValidJob(jobId))
+                foreach (var uj in _resourceService.GetUserIdsForValidJob(jobId).ToList())
                 {
-                    var mappedUser = _mapper.Map<AbridgedUserInfoResponseDto>(await _userManager.FindByIdAsync(uj.UserId));
-                    mappedUser.Location = _resourceService.GetUserDetailLocation(Url, Request, uj.UserId);
-                    assignees.Add(mappedUser);
+                    var user = await _userManager.FindByIdAsync(uj.UserId);
+                    if (user.IsActive)
+                    {
+                        var mappedUser = _mapper.Map<AbridgedUserInfoResponseDto>(user);
+                        mappedUser.Location = _resourceService.GetUserDetailLocation(Url, Request, user.Id);
+                        assignees.Add(mappedUser);
+                    }
                 }
                 return Ok(assignees);
             }
