@@ -73,7 +73,7 @@ namespace GoApi.Services.Implementations
             return mappedDto;
         }
 
-        public IEnumerable<UserJob> GetUserIdsForValidJob(Guid jobId)
+        public IEnumerable<UserJob> GetAssigneeUserIdsForValidJob(Guid jobId)
         {
             return _appDbContext.Assignments.Where(uj => uj.JobId == jobId);
         }

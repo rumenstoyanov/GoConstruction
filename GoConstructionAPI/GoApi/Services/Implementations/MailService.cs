@@ -24,7 +24,7 @@ namespace GoApi.Services.Implementations
             var outDict = new Dictionary<string, string>();
             foreach (var r in recepients)
             {
-                outDict.Add(r.FullName, r.Email);
+                outDict[r.Email] = r.FullName; // The email is unique, the full name is not. Use dictionary indexer as opposed to .Add method to ensure no duplicate emails.
             }
             return outDict;
 
@@ -75,12 +75,12 @@ namespace GoApi.Services.Implementations
             }
         }
 
-        public async Task SendMailAsync(Dictionary<string, string> nameAddressPairs, string subject, string text)
+        public async Task SendMailAsync(Dictionary<string, string> emailNamePairs, string subject, string text)
         {
             var emailTasks = new List<Task>();
-            foreach (var name in nameAddressPairs.Keys)
+            foreach (var email in emailNamePairs.Keys)
             {
-                emailTasks.Add(SendMailAsync(name, nameAddressPairs[name], subject, text));
+                emailTasks.Add(SendMailAsync(emailNamePairs[email], email, subject, text));
             }
             await Task.WhenAll(emailTasks);
         }

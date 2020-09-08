@@ -17,6 +17,6 @@ namespace GoApi.Services.Interfaces
 
         JobUpdateInternalDto GetJobUpdateFriendly(JobUpdateRequestDto dto);
 
-        IEnumerable<UserJob> GetUserIdsForValidJob(Guid jobId);
+        IEnumerable<UserJob> GetAssigneeUserIdsForValidJob(Guid jobId);
     }
 }

@@ -196,7 +196,7 @@ namespace GoApi.Controllers
             if (job != null)
             {
                 var assignees = new List<AbridgedUserInfoResponseDto>();
-                foreach (var uj in _resourceService.GetUserIdsForValidJob(jobId).ToList())
+                foreach (var uj in _resourceService.GetAssigneeUserIdsForValidJob(jobId).ToList())
                 {
                     var user = await _userManager.FindByIdAsync(uj.UserId);
                     if (user.IsActive)
@@ -221,7 +221,7 @@ namespace GoApi.Controllers
             {
                 if ((await _authService.GetValidUsersAsync(oid)).Any(u => u.Id == assignee.UserId))
                 {
-                    if (!_resourceService.GetUserIdsForValidJob(jobId).Any(uj => uj.UserId == assignee.UserId))
+                    if (!_resourceService.GetAssigneeUserIdsForValidJob(jobId).Any(uj => uj.UserId == assignee.UserId))
                     {
                         _appDbContext.Assignments.Add(new UserJob { UserId = assignee.UserId, JobId = jobId });
                         await _appDbContext.SaveChangesAsync();

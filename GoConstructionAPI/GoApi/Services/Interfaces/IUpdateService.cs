@@ -25,7 +25,9 @@ namespace GoApi.Services.Interfaces
             where T : class
             where U : class;
 
-        List<ApplicationUser> GetJobUpdateRecipients(Job job);
+        Task<IEnumerable<ApplicationUser>> GetJobUpdateRecipients(Job job);
+
+        Update GetAssigneeUpdate(ApplicationUser user, Job job, ApplicationUser updatedUser, string userDetailLocation, string updatedUserDetailLocation, bool isAddition);
 
 
     }

@@ -9,11 +9,20 @@ using System.Threading.Tasks;
 using GoApi.Data.Constants;
 using Microsoft.AspNetCore.Mvc;
 using GoApi.Controllers;
+using Microsoft.AspNetCore.Identity;
 
 namespace GoApi.Services.Implementations
 {
     public class UpdateService : IUpdateService
     {
+        private readonly IResourceService _resourceService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        public UpdateService(IResourceService resourceService, UserManager<ApplicationUser> userManager)
+        {
+            _resourceService = resourceService;
+            _userManager = userManager;
+
+        }
         public string AssembleSyntaxFromDiff(Dictionary<string, string> diff)
         {
 
@@ -66,16 +75,43 @@ namespace GoApi.Services.Implementations
             return null;
         }
 
+        public Update GetAssigneeUpdate(ApplicationUser user, Job job, ApplicationUser updatedUser, string userDetailLocation, string updatedUserDetailLocation, bool isAddition)
+        {
+            var update = new Update
+            {
+                UpdatedResourceId = job.Id,
+                Time = DateTime.UtcNow,
+                Oid = job.Oid
+            };
+            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = userDetailLocation, Name = user.FullName }, Syntax = null });
+            update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = isAddition ? " assigned the job to " : " removed " });
+            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = updatedUser.Id, Location = updatedUserDetailLocation, Name = updatedUser.FullName }, Syntax = null });
+            update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = isAddition ? "." : " from the assignees."  });
+            return update;
+        }
+
         public List<ApplicationUser> GetSiteUpdateRecipients(Site site)
         {
             return new List<ApplicationUser> { site.CreatedByUser };
             
         }
 
-        public List<ApplicationUser> GetJobUpdateRecipients(Job job)
+        public async Task<IEnumerable<ApplicationUser>> GetJobUpdateRecipients(Job job)
         {
-
-            return new List<ApplicationUser> { job.Owner };
+            var outList = new List<ApplicationUser>();
+            foreach (var uj in _resourceService.GetAssigneeUserIdsForValidJob(job.Id).ToList())
+            {
+                var user = await _userManager.FindByIdAsync(uj.UserId);
+                if (user.IsActive)
+                {
+                    outList.Add(user);
+                }
+            }
+            outList.Add(job.Owner);
+            return outList; // May be duplicate users here - these are filtered to be unique after this step but before the emails are sent off.
         }
+
+
+
     } 
 }
