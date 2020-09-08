@@ -60,9 +60,9 @@ namespace GoApi.Services.Implementations
 
         }
 
-        public string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, ApplicationUser user)
+        public string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, string userId)
         {
-            var location = Url.Action(nameof(OrganisationController.GetUsersDetail), "Organisation", new { userId = user.Id }, Request.Scheme);
+            var location = Url.Action(nameof(OrganisationController.GetUsersDetail), "Organisation", new { userId = userId }, Request.Scheme);
             return location;
         }
 
@@ -71,6 +71,11 @@ namespace GoApi.Services.Implementations
             var mappedDto = _mapper.Map<JobUpdateInternalDto>(dto);
             mappedDto.Status = _appDbContext.JobStatuses.FirstOrDefault(js => js.Id == dto.JobStatusId).Title;
             return mappedDto;
+        }
+
+        public IEnumerable<UserJob> GetAssigneeUserIdsForValidJob(Guid jobId)
+        {
+            return _appDbContext.Assignments.Where(uj => uj.JobId == jobId);
         }
     }
 }

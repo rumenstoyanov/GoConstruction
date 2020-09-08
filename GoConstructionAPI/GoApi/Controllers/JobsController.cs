@@ -129,6 +129,7 @@ namespace GoApi.Controllers
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
         public async Task<IActionResult> PatchJobs(Guid jobId, [FromBody] JsonPatchDocument<JobUpdateRequestDto> patchDoc)
         {
+            // Anybody can patch a job but only Supervisors and above can change assignees. 
             var oid = _authService.GetRequestOid(Request);
             var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
             if (job != null)
@@ -153,7 +154,7 @@ namespace GoApi.Controllers
                     job, 
                     _resourceService.GetJobUpdateFriendly(_mapper.Map<JobUpdateRequestDto>(job)),
                     _resourceService.GetJobUpdateFriendly(jobToPatch), 
-                    _resourceService.GetUserDetailLocation(Url, Request, user)
+                    _resourceService.GetUserDetailLocation(Url, Request, user.Id)
                     );
                 _mapper.Map(jobToPatch, job);
 
@@ -167,7 +168,7 @@ namespace GoApi.Controllers
                         {
                             var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
                             var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
-                            var recepients = updateService.GetJobUpdateRecipients(job);
+                            var recepients = await updateService.GetJobUpdateRecipientsAsync(job);
                             await mailService.SendJobUpdateAsync(recepients, update, job);
                         }
                     });
@@ -186,6 +187,121 @@ namespace GoApi.Controllers
             return Ok(_mapper.Map<IEnumerable<JobStatusReadResponseDto>>(_appDbContext.JobStatuses));
         }
 
+        [HttpGet("{jobId}/assignees")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public async Task<IActionResult> GetAssignees(Guid jobId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                var assignees = new List<AbridgedUserInfoResponseDto>();
+                foreach (var uj in _resourceService.GetAssigneeUserIdsForValidJob(jobId).ToList())
+                {
+                    var user = await _userManager.FindByIdAsync(uj.UserId);
+                    if (user.IsActive)
+                    {
+                        var mappedUser = _mapper.Map<AbridgedUserInfoResponseDto>(user);
+                        mappedUser.Location = _resourceService.GetUserDetailLocation(Url, Request, user.Id);
+                        assignees.Add(mappedUser);
+                    }
+                }
+                return Ok(assignees);
+            }
+            return NotFound();
+        }
+
+        [HttpPost("{jobId}/assignees")]
+        [Authorize(Policy = Seniority.SupervisorOrAbovePolicy)]
+        public async Task<IActionResult> PostAssignees(Guid jobId, [FromBody] AddAssigneeRequestDto assignee)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                if ((await _authService.GetValidUsersAsync(oid)).Any(u => u.Id == assignee.UserId))
+                {
+                    if (!_resourceService.GetAssigneeUserIdsForValidJob(jobId).Any(uj => uj.UserId == assignee.UserId))
+                    {
+                        _appDbContext.Assignments.Add(new UserJob { UserId = assignee.UserId, JobId = jobId });
+
+                        var user = await _userManager.GetUserAsync(User);
+                        var updatedUser = await _userManager.FindByIdAsync(assignee.UserId);
+
+                        var update = _updateService.GetAssigneeUpdate(
+                            user,
+                            job,
+                            updatedUser,
+                            _resourceService.GetUserDetailLocation(Url, Request, user.Id),
+                            _resourceService.GetUserDetailLocation(Url, Request, updatedUser.Id),
+                            true
+                            );
+                        _appDbContext.Add(update);
+
+                        _queue.QueueBackgroundWorkItem(async token =>
+                        {
+                            using (var scope = _serviceScopeFactory.CreateScope())
+                            {
+                                var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                                var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
+                                var recepients = await updateService.GetJobUpdateRecipientsAsync(job);
+                                await mailService.SendJobUpdateAsync(recepients, update, job);
+                            }
+                        });
+
+                        await _appDbContext.SaveChangesAsync();
+                    }
+                    return Ok();
+                }
+            }
+            return NotFound();
+        }
+
+        [HttpDelete("{jobId}/assignees")]
+        [Authorize(Policy = Seniority.SupervisorOrAbovePolicy)]
+        public async Task<IActionResult> DeleteAssignees(Guid jobId, [FromBody] AddAssigneeRequestDto assignee)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                var assignment = await _appDbContext.Assignments.FirstOrDefaultAsync(uj => uj.JobId == jobId && uj.UserId == assignee.UserId);
+                if (assignment != null)
+                {
+                    _appDbContext.Assignments.Remove(assignment);
+
+
+                    var user = await _userManager.GetUserAsync(User);
+                    var updatedUser = await _userManager.FindByIdAsync(assignee.UserId);
+
+                    var update = _updateService.GetAssigneeUpdate(
+                        user,
+                        job,
+                        updatedUser,
+                        _resourceService.GetUserDetailLocation(Url, Request, user.Id),
+                        _resourceService.GetUserDetailLocation(Url, Request, updatedUser.Id),
+                        false
+                        );
+                    _appDbContext.Add(update);
+
+                    _queue.QueueBackgroundWorkItem(async token =>
+                    {
+                        using (var scope = _serviceScopeFactory.CreateScope())
+                        {
+                            var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                            var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
+                            var recepients = await updateService.GetJobUpdateRecipientsAsync(job);
+                            await mailService.SendJobUpdateAsync(recepients, update, job);
+                        }
+                    });
+
+                    await _appDbContext.SaveChangesAsync();
+                    return NoContent();
+                }
+
+            }
+            return NotFound();
+        }
 
 
     }

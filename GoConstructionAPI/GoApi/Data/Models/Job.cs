@@ -48,5 +48,6 @@ namespace GoApi.Data.Models
         public Guid? ParentJobId { get; set; }
 
         public List<Job> Jobs { get; set; }
+        public List<UserJob> Assignments { get; set; }
     }
 }
