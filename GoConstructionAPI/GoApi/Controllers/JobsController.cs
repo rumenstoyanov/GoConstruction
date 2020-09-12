@@ -303,6 +303,31 @@ namespace GoApi.Controllers
             return NotFound();
         }
 
+        [HttpPost("{jobId}/comments")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public async Task<IActionResult> PostComments(Guid jobId, [FromBody] CommentCreateRequestDto model)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                var mappedComment = _mapper.Map<Comment>(model);
+                var user = await _userManager.GetUserAsync(User);
+                mappedComment.PostedByUserId = user.Id;
+                mappedComment.JobId = jobId;
+                mappedComment.TimePosted = DateTime.UtcNow;
+
+                var validUsersToTag = await _authService.GetValidUsersAsync(oid);
+                mappedComment.UsersTagged = mappedComment.UsersTagged.Distinct().Where(id => validUsersToTag.Any(u => u.Id == id)).ToList();
+
+                await _appDbContext.AddAsync(mappedComment);
+                await _appDbContext.SaveChangesAsync();
+                return Ok();
+
+            }
+            return NotFound();
+        }
+
 
     }
 }
