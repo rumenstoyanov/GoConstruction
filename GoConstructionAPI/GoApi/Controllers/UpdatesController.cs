@@ -41,7 +41,7 @@ namespace GoApi.Controllers
             var updates = _appDbContext.Updates.Where(u => u.Oid == oid && u.UpdatedResourceId == resourceId); // Note that updates for inactive resources will still be retrievable,
                                                                                                                // as we do not store active status since this is a general update table.
             var mappedUpdates = _mapper.Map<IEnumerable<UpdateReadResponseDto>>(updates);
-            return Ok(mappedUpdates);
+            return Ok(mappedUpdates.OrderBy(u => u.Time));
         }
     }
 }

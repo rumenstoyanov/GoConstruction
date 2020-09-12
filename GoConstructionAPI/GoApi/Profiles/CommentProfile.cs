@@ -14,6 +14,7 @@ namespace GoApi.Profiles
         {
             // Source -> Target
             CreateMap<CommentCreateRequestDto, Comment>();
+            CreateMap<Comment, CommentReadResponseDto>();
         }
     }
 }

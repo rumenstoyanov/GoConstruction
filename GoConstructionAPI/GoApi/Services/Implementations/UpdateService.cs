@@ -53,7 +53,6 @@ namespace GoApi.Services.Implementations
 
         }
 
-
         public Update GetResourceUpdate<T, U>(ApplicationUser user, T resource, U preUpdate, U postUpdate, string userDetailLocation)
             where T : class
             where U : class
@@ -111,7 +110,26 @@ namespace GoApi.Services.Implementations
             return outList; // May be duplicate users here - these are filtered to be unique after this step but before the emails are sent off.
         }
 
-
-
+        public async Task<Update> GetCommentUpdateAsync(ApplicationUser user, Job job, Comment comment)
+        {
+            var update = new Update
+            {
+                UpdatedResourceId = job.Id,
+                Time = DateTime.UtcNow,
+                Oid = job.Oid
+            };
+            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = "", Name = user.FullName }, Syntax = null });
+            update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = $" commented:\n\n{comment.Text}\n\n" });
+            if (comment.UsersTagged.Any())
+            {
+                update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = $"Tagged:\n" });
+                foreach (var u in comment.UsersTagged)
+                {
+                    update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = u, Location = "", Name = (await _userManager.FindByIdAsync(u)).FullName } });
+                    update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = "\n" });
+                }
+            }
+            return update;
+        }
     } 
 }

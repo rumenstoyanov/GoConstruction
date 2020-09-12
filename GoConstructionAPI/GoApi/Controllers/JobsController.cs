@@ -198,13 +198,9 @@ namespace GoApi.Controllers
                 var assignees = new List<AbridgedUserInfoResponseDto>();
                 foreach (var uj in _resourceService.GetAssigneeUserIdsForValidJob(jobId).ToList())
                 {
-                    var user = await _userManager.FindByIdAsync(uj.UserId);
-                    if (user.IsActive)
-                    {
-                        var mappedUser = _mapper.Map<AbridgedUserInfoResponseDto>(user);
-                        mappedUser.Location = _resourceService.GetUserDetailLocation(Url, Request, user.Id);
-                        assignees.Add(mappedUser);
-                    }
+                    // Want ALL users, not just active ones, as FE want to see legacy assignees for due diligence.
+                    assignees.Add(await _resourceService.GetAbridgedUserInfoFromUserIdAsync(uj.UserId, Url, Request));
+                    
                 }
                 return Ok(assignees);
             }
@@ -320,6 +316,8 @@ namespace GoApi.Controllers
                 var validUsersToTag = await _authService.GetValidUsersAsync(oid);
                 mappedComment.UsersTagged = mappedComment.UsersTagged.Distinct().Where(id => validUsersToTag.Any(u => u.Id == id)).ToList();
 
+                var update = await _updateService.GetCommentUpdateAsync(user, job, mappedComment);
+
                 await _appDbContext.AddAsync(mappedComment);
                 await _appDbContext.SaveChangesAsync();
                 return Ok();
@@ -328,6 +326,26 @@ namespace GoApi.Controllers
             return NotFound();
         }
 
+        [HttpGet("{jobId}/comments")]
+        [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
+        public async Task<IActionResult> GetComments(Guid jobId)
+        {
+            var oid = _authService.GetRequestOid(Request);
+            var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
+            if (job != null)
+            {
+                var commentsOut = new List<CommentReadResponseDto>();
 
+                foreach (var comment in _appDbContext.Comments.Where(c => c.JobId == jobId).ToList())
+                {
+                    var mappedComment = _mapper.Map<CommentReadResponseDto>(comment);
+                    mappedComment.PostedByUserInfo = await _resourceService.GetAbridgedUserInfoFromUserIdAsync(comment.PostedByUserId, Url, Request);
+                    mappedComment.UsersTaggedInfo = await _resourceService.GetAbridgedUserInfoFromUserIdAsync(comment.UsersTagged, Url, Request);
+                    commentsOut.Add(mappedComment);
+                }
+                return Ok(commentsOut.OrderBy(c => c.TimePosted));
+            }
+            return NotFound();
+        }
     }
 }

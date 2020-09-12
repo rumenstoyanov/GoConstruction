@@ -30,5 +30,8 @@ namespace GoApi.Services.Interfaces
         Update GetAssigneeUpdate(ApplicationUser user, Job job, ApplicationUser updatedUser, string userDetailLocation, string updatedUserDetailLocation, bool isAddition);
 
 
+        Task<Update> GetCommentUpdateAsync(ApplicationUser user, Job job, Comment comment);
+
+
     }
 }

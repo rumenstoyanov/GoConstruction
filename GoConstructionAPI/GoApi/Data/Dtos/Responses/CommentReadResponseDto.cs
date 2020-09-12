@@ -8,9 +8,9 @@ namespace GoApi.Data.Dtos
 {
     public class CommentReadResponseDto
     {
-        public AbridgedUserInfoResponseDto PostedByUser { get; set; }
+        public AbridgedUserInfoResponseDto PostedByUserInfo { get; set; }
         public DateTime TimePosted { get; set; }
         public string Text { get; set; }
-        public List<AbridgedUserInfoResponseDto> UsersTagged { get; set; } = new List<AbridgedUserInfoResponseDto>();
+        public List<AbridgedUserInfoResponseDto> UsersTaggedInfo { get; set; } = new List<AbridgedUserInfoResponseDto>();
     }
 }
