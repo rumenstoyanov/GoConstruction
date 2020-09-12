@@ -10,6 +10,7 @@ using GoApi.Data.Constants;
 using Microsoft.AspNetCore.Mvc;
 using GoApi.Controllers;
 using Microsoft.AspNetCore.Identity;
+using GoApi.Data;
 
 namespace GoApi.Services.Implementations
 {
@@ -17,10 +18,12 @@ namespace GoApi.Services.Implementations
     {
         private readonly IResourceService _resourceService;
         private readonly UserManager<ApplicationUser> _userManager;
-        public UpdateService(IResourceService resourceService, UserManager<ApplicationUser> userManager)
+        private readonly AppDbContext _appDbContext;
+        public UpdateService(IResourceService resourceService, UserManager<ApplicationUser> userManager, AppDbContext appDbContext)
         {
             _resourceService = resourceService;
             _userManager = userManager;
+            _appDbContext = appDbContext;
 
         }
         public string AssembleSyntaxFromDiff(Dictionary<string, string> diff)
@@ -97,17 +100,38 @@ namespace GoApi.Services.Implementations
 
         public async Task<IEnumerable<ApplicationUser>> GetJobUpdateRecipientsAsync(Job job)
         {
+            // Assemble the list of all users concerned with this job in stages.
+            // May be duplicate users here - these are filtered to be unique after this step but before the emails are sent off.
             var outList = new List<ApplicationUser>();
-            foreach (var uj in _resourceService.GetAssigneeUserIdsForValidJob(job.Id).ToList())
+
+            async Task AddToOutList(string userId)
             {
-                var user = await _userManager.FindByIdAsync(uj.UserId);
+                var user = await _userManager.FindByIdAsync(userId);
                 if (user.IsActive)
                 {
                     outList.Add(user);
                 }
             }
-            outList.Add(job.Owner);
-            return outList; // May be duplicate users here - these are filtered to be unique after this step but before the emails are sent off.
+
+            // Step 1: Get all the assignees of the job.
+            foreach (var uj in _resourceService.GetAssigneeUserIdsForValidJob(job.Id).ToList())
+            {
+                await AddToOutList(uj.UserId);
+            }
+
+            // Step 2: Get all the people who have commented or been tagged in a comment.
+            foreach (var comment in _appDbContext.Comments.Where(c => c.JobId == job.Id).ToList())
+            {
+                await AddToOutList(comment.PostedByUserId);
+                foreach (var id in comment.UsersTagged)
+                {
+                    await AddToOutList(id);
+                }
+            }
+
+            // Step 3: Get the job creator/owner.
+            await AddToOutList(job.Owner.Id);
+            return outList; 
         }
 
         public async Task<Update> GetCommentUpdateAsync(ApplicationUser user, Job job, Comment comment)
@@ -125,8 +149,9 @@ namespace GoApi.Services.Implementations
                 update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = $"Tagged:\n" });
                 foreach (var u in comment.UsersTagged)
                 {
-                    update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = u, Location = "", Name = (await _userManager.FindByIdAsync(u)).FullName } });
-                    update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = "\n" });
+                    var _user = await _userManager.FindByIdAsync(u);
+                    update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = u, Location = "", Name = _user.FullName } });
+                    update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = $" ({_user.Email})\n" });
                 }
             }
             return update;

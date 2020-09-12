@@ -319,6 +319,18 @@ namespace GoApi.Controllers
                 var update = await _updateService.GetCommentUpdateAsync(user, job, mappedComment);
 
                 await _appDbContext.AddAsync(mappedComment);
+                await _appDbContext.AddAsync(update);
+
+                _queue.QueueBackgroundWorkItem(async token =>
+                {
+                    using (var scope = _serviceScopeFactory.CreateScope())
+                    {
+                        var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                        var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
+                        var recepients = await updateService.GetJobUpdateRecipientsAsync(job);
+                        await mailService.SendJobUpdateAsync(recepients, update, job);
+                    }
+                });
                 await _appDbContext.SaveChangesAsync();
                 return Ok();
 
