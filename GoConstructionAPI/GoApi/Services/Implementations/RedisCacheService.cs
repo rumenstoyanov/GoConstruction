@@ -22,9 +22,9 @@ namespace GoApi.Services.Implementations
             _isEnabled = redisSettings.IsEnabled;
         }
 
-        private string BuildCacheKeyFromRequest(HttpRequest request)
+        private string BuildCacheKeyFromRequest(HttpRequest request, Guid oid)
         {
-            return $"{request.Path}";
+            return $"{oid}|{request.Path}";
         }
 
         public async Task SetCacheValueAsync<T>(string key, T value) where T : class
@@ -36,9 +36,9 @@ namespace GoApi.Services.Implementations
             var db = _connectionMultiplexer.GetDatabase();
             await db.StringSetAsync(key, JsonConvert.SerializeObject(value));
         }
-        public async Task SetCacheValueAsync<T>(HttpRequest request, T value) where T : class
+        public async Task SetCacheValueAsync<T>(HttpRequest request, Guid oid, T value) where T : class
         {
-            await SetCacheValueAsync(BuildCacheKeyFromRequest(request), value);
+            await SetCacheValueAsync(BuildCacheKeyFromRequest(request, oid), value);
         }
 
         public async Task<T> TryGetCacheValueAsync<T>(string key) where T : class
@@ -57,9 +57,9 @@ namespace GoApi.Services.Implementations
             return null;
         }
 
-        public async Task<T> TryGetCacheValueAsync<T>(HttpRequest request) where T : class
+        public async Task<T> TryGetCacheValueAsync<T>(HttpRequest request, Guid oid) where T : class
         {
-            return await TryGetCacheValueAsync<T>(BuildCacheKeyFromRequest(request));
+            return await TryGetCacheValueAsync<T>(BuildCacheKeyFromRequest(request, oid));
         }
     }
 }

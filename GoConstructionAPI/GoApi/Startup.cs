@@ -27,6 +27,7 @@ using static GoApi.Data.Constants.Seniority;
 using Swashbuckle.AspNetCore.Filters;
 using Newtonsoft.Json.Serialization;
 using StackExchange.Redis;
+using System.Threading;
 
 namespace GoApi
 {
@@ -188,6 +189,7 @@ namespace GoApi
             {
                 endpoints.MapControllers();
             });
+            ThreadPool.SetMinThreads(4000, 100); // Redis worker and IOCP threads respectively.
         }
     }
 }

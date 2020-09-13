@@ -31,6 +31,7 @@ namespace GoApi.Controllers
         private readonly IBackgroundTaskQueue _queue;
         private readonly IUpdateService _updateService;
         private readonly IResourceService _resourceService;
+        private readonly ICacheService _cacheService;
 
 
         public SitesController(
@@ -41,7 +42,8 @@ namespace GoApi.Controllers
             IServiceScopeFactory serviceScopeFactory,
             IBackgroundTaskQueue queue,
             IUpdateService updateService,
-            IResourceService resourceService
+            IResourceService resourceService,
+            ICacheService cacheService
             
             )
         {
@@ -53,6 +55,7 @@ namespace GoApi.Controllers
             _queue = queue;
             _updateService = updateService;
             _resourceService = resourceService;
+            _cacheService = cacheService;
         }
 
         [HttpPost]
@@ -77,11 +80,18 @@ namespace GoApi.Controllers
 
         [HttpGet]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-        public IActionResult GetSites()
+        public async Task<IActionResult> GetSites()
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<SiteReadResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var sites = _appDbContext.Sites.Where(s => s.Oid == oid && s.IsActive);
             var mappedSites = _mapper.Map<IEnumerable<SiteReadResponseDto>>(sites);
+            await _cacheService.SetCacheValueAsync(Request, oid, mappedSites);
             return Ok(mappedSites);
 
         }
