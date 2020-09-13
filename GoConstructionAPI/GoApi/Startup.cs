@@ -26,6 +26,7 @@ using Microsoft.OpenApi.Models;
 using static GoApi.Data.Constants.Seniority;
 using Swashbuckle.AspNetCore.Filters;
 using Newtonsoft.Json.Serialization;
+using StackExchange.Redis;
 
 namespace GoApi
 {
@@ -45,12 +46,15 @@ namespace GoApi
             Configuration.Bind("JwtSettings", jwtSettings);
             var mailSettings = new MailSettings();
             Configuration.Bind("MailSettings", mailSettings);
+            var redisSettings = new RedisSettings();
+            Configuration.Bind("RedisSettings", redisSettings);
 
             services.AddControllers().AddNewtonsoftJson(s => {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
             services.AddSingleton(jwtSettings);
             services.AddSingleton(mailSettings);
+            services.AddSingleton(redisSettings);
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<AppDbContext>()
@@ -62,6 +66,8 @@ namespace GoApi
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddScoped<IUpdateService, UpdateService>();
             services.AddScoped<IResourceService, ResourceService>();
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisSettings.ConnectionString));
+            services.AddSingleton<ICacheService, RedisCacheService>();
             services.Configure<IdentityOptions>(options =>
             {
                 options.User.RequireUniqueEmail = true;
@@ -90,9 +96,9 @@ namespace GoApi
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = Configuration["JwtSettings:Issuer"],
-                        ValidAudience = Configuration["JwtSettings:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtSettings:SigningKey"]))
+                        ValidIssuer = jwtSettings.Issuer,
+                        ValidAudience = jwtSettings.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SigningKey))
                     };
                 });
             services.AddAuthorization(options =>
