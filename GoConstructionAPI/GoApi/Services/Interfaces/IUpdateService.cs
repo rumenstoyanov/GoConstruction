@@ -28,7 +28,7 @@ namespace GoApi.Services.Interfaces
 
         Task<IEnumerable<ApplicationUser>> GetJobUpdateRecipientsAsync(Job job);
 
-        Update GetAssigneeUpdate(ApplicationUser user, Job job, ApplicationUser updatedUser, string userDetailLocation, string updatedUserDetailLocation, bool isAddition);
+        Update GetAssigneeUpdate(ApplicationUser user, Job job, ApplicationUser updatedUser, bool isAddition);
 
 
         Task<Update> GetCommentUpdateAsync(ApplicationUser user, Job job, Comment comment);

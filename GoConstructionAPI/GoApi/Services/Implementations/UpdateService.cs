@@ -78,7 +78,7 @@ namespace GoApi.Services.Implementations
             return null;
         }
 
-        public Update GetAssigneeUpdate(ApplicationUser user, Job job, ApplicationUser updatedUser, string userDetailLocation, string updatedUserDetailLocation, bool isAddition)
+        public Update GetAssigneeUpdate(ApplicationUser user, Job job, ApplicationUser updatedUser, bool isAddition)
         {
             var update = new Update
             {
@@ -86,9 +86,9 @@ namespace GoApi.Services.Implementations
                 Time = DateTime.UtcNow,
                 Oid = job.Oid
             };
-            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = userDetailLocation, Name = user.FullName }, Syntax = null });
+            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = _userDetailLocation, Name = user.FullName }, Syntax = null });
             update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = isAddition ? " assigned the job to " : " removed " });
-            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = updatedUser.Id, Location = updatedUserDetailLocation, Name = updatedUser.FullName }, Syntax = null });
+            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = updatedUser.Id, Location = _userDetailLocation, Name = updatedUser.FullName }, Syntax = null });
             update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = isAddition ? "." : " from the assignees for this job."  });
             return update;
         }

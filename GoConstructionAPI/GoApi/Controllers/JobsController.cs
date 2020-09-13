@@ -228,8 +228,6 @@ namespace GoApi.Controllers
                             user,
                             job,
                             updatedUser,
-                            _resourceService.GetUserDetailLocation(Url, Request, user.Id),
-                            _resourceService.GetUserDetailLocation(Url, Request, updatedUser.Id),
                             true
                             );
                         _appDbContext.Add(update);
@@ -274,8 +272,6 @@ namespace GoApi.Controllers
                         user,
                         job,
                         updatedUser,
-                        _resourceService.GetUserDetailLocation(Url, Request, user.Id),
-                        _resourceService.GetUserDetailLocation(Url, Request, updatedUser.Id),
                         false
                         );
                     _appDbContext.Add(update);
