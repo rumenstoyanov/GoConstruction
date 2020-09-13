@@ -153,8 +153,7 @@ namespace GoApi.Controllers
                     user, 
                     job, 
                     _resourceService.GetJobUpdateFriendly(_mapper.Map<JobUpdateRequestDto>(job)),
-                    _resourceService.GetJobUpdateFriendly(jobToPatch), 
-                    _resourceService.GetUserDetailLocation(Url, Request, user.Id)
+                    _resourceService.GetJobUpdateFriendly(jobToPatch)
                     );
                 _mapper.Map(jobToPatch, job);
 

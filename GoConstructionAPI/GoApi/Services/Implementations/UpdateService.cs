@@ -27,6 +27,32 @@ namespace GoApi.Services.Implementations
             _appDbContext = appDbContext;
 
         }
+
+        // {Controller}.{Method}.{Id Name}
+        // To be parsed when read requests are made - constructing the links fresh.
+        private string _userDetailLocation
+        {
+            get
+            {
+                return $"{nameof(Organisation)}.{nameof(OrganisationController.GetUsersDetail)}.userId";
+            }
+        }
+
+        
+        private string ResourceDetailLocation<T>(T resource) where T : class
+        {
+
+            switch (resource.GetType().ToString())
+            {
+                case nameof(Job):
+                    return $"{nameof(Job)}s.{nameof(JobsController.GetJobsDetail)}.jobId";
+                case nameof(Site):
+                    return $"{nameof(Site)}s.{nameof(SitesController.GetSitesDetail)}.siteId";
+                default:
+                    return "";
+            }
+                
+        }
         public string AssembleSyntaxFromDiff(Dictionary<string, string> diff)
         {
 
@@ -57,7 +83,7 @@ namespace GoApi.Services.Implementations
 
         }
 
-        public Update GetResourceUpdate<T, U>(ApplicationUser user, T resource, U preUpdate, U postUpdate, string userDetailLocation)
+        public Update GetResourceUpdate<T, U>(ApplicationUser user, T resource, U preUpdate, U postUpdate)
             where T : class
             where U : class
         {
@@ -71,7 +97,7 @@ namespace GoApi.Services.Implementations
                     Time = DateTime.UtcNow,
                     Oid = Guid.Parse(resource.GetType().GetProperty(FixedPropertyNames.OrganisationId).GetValue(resource).ToString())
                 };
-                update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = userDetailLocation, Name = user.FullName }, Syntax = null });
+                update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = _userDetailLocation, Name = user.FullName }, Syntax = null });
                 update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = syntax });
                 return update;
             }
@@ -93,9 +119,22 @@ namespace GoApi.Services.Implementations
             return update;
         }
 
-        public List<ApplicationUser> GetSiteUpdateRecipients(Site site)
+        public async Task<IEnumerable<ApplicationUser>> GetSiteUpdateRecipientsAsync(Site site)
         {
-            return new List<ApplicationUser> { site.CreatedByUser };
+            // Assemble the list of all users concerned with this job in stages.
+            // May be duplicate users here - these are filtered to be unique after this step but before the emails are sent off.
+            var outList = new List<ApplicationUser>();
+
+            async Task AddToOutList(string userId)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user.IsActive)
+                {
+                    outList.Add(user);
+                }
+            }
+            await AddToOutList(site.CreatedByUserId);
+            return outList;
             
         }
 
@@ -131,18 +170,8 @@ namespace GoApi.Services.Implementations
             }
 
             // Step 3: Get the job creator/owner.
-            await AddToOutList(job.Owner.Id);
+            await AddToOutList(job.OwnerId);
             return outList; 
-        }
-
-        // {Controller}.{Method}.{Id Name}
-        // To be parsed when read requests are made - constructing the links fresh.
-        private string _userDetailLocation
-        {
-            get
-            {
-                return $"Organisation.{nameof(OrganisationController.GetUsersDetail)}.userId";
-            }
         }
 
         public async Task<Update> GetCommentUpdateAsync(ApplicationUser user, Job job, Comment comment)

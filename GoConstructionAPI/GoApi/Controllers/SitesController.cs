@@ -130,7 +130,7 @@ namespace GoApi.Controllers
                     return ValidationProblem(ModelState);
                 }
                 var user = await _userManager.GetUserAsync(User);
-                var update = _updateService.GetResourceUpdate(user, site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch, _resourceService.GetUserDetailLocation(Url, Request, user.Id));
+                var update = _updateService.GetResourceUpdate(user, site, _mapper.Map<SiteUpdateRequestDto>(site), siteToPatch);
                 _mapper.Map(siteToPatch, site);
 
                 if (update != null)
@@ -143,7 +143,7 @@ namespace GoApi.Controllers
                         {
                             var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
                             var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
-                            var recepients = updateService.GetSiteUpdateRecipients(site);
+                            var recepients = await updateService.GetSiteUpdateRecipientsAsync(site);
                             await mailService.SendSiteUpdateAsync(recepients, update, site);
                         }
                     });
