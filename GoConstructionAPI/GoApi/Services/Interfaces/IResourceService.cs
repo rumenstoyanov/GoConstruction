@@ -18,5 +18,13 @@ namespace GoApi.Services.Interfaces
         JobUpdateInternalDto GetJobUpdateFriendly(JobUpdateRequestDto dto);
 
         IEnumerable<UserJob> GetAssigneeUserIdsForValidJob(Guid jobId);
+
+        /// <summary>
+        /// userId known to be valid a priori.
+        /// </summary>
+        Task<AbridgedUserInfoResponseDto> GetAbridgedUserInfoFromUserIdAsync(string userId, IUrlHelper Url, HttpRequest Request);
+
+        Task<List<AbridgedUserInfoResponseDto>> GetAbridgedUserInfoFromUserIdAsync(List<string> userIds, IUrlHelper Url, HttpRequest Request);
+
     }
 }

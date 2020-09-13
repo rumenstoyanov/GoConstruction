@@ -6,6 +6,7 @@ using GoApi.Data.Dtos;
 using GoApi.Data.Models;
 using GoApi.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,11 +22,13 @@ namespace GoApi.Services.Implementations
     {
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ResourceService(AppDbContext appDbContext, IMapper mapper)
+        public ResourceService(AppDbContext appDbContext, IMapper mapper, UserManager<ApplicationUser> userManager)
         {
             _appDbContext = appDbContext;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         public async Task CreateJobAsync(Site site, Job mappedJob, Guid oid, ApplicationUser user, bool IsRoot)
@@ -77,5 +80,24 @@ namespace GoApi.Services.Implementations
         {
             return _appDbContext.Assignments.Where(uj => uj.JobId == jobId);
         }
+
+        public async Task<AbridgedUserInfoResponseDto> GetAbridgedUserInfoFromUserIdAsync(string userId, IUrlHelper Url, HttpRequest Request)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            var location = GetUserDetailLocation(Url, Request, user.Id);
+            return new AbridgedUserInfoResponseDto { Id = user.Id, FullName = user.FullName, Location = location };
+        }
+
+        public async Task<List<AbridgedUserInfoResponseDto>> GetAbridgedUserInfoFromUserIdAsync(List<string> userIds, IUrlHelper Url, HttpRequest Request)
+        {
+            var outList = new List<AbridgedUserInfoResponseDto>();
+            foreach (var userId in userIds)
+            {
+                outList.Add(await GetAbridgedUserInfoFromUserIdAsync(userId, Url, Request));
+            }
+            return outList;
+        }
+
+
     }
 }

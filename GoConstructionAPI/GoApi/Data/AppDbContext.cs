@@ -26,5 +26,6 @@ namespace GoApi.Data
         public DbSet<JobStatus> JobStatuses { get; set; }
         public DbSet<Job> Jobs { get; set; }
         public DbSet<UserJob> Assignments { get; set; }
+        public DbSet<Comment> Comments { get; set; }
     }
 }
