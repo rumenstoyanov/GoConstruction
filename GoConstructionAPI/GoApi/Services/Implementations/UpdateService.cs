@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using GoApi.Controllers;
 using Microsoft.AspNetCore.Identity;
 using GoApi.Data;
+using Microsoft.AspNetCore.Http;
 
 namespace GoApi.Services.Implementations
 {
@@ -134,6 +135,16 @@ namespace GoApi.Services.Implementations
             return outList; 
         }
 
+        // {Controller}.{Method}.{Id Name}
+        // To be parsed when read requests are made - constructing the links fresh.
+        private string _userDetailLocation
+        {
+            get
+            {
+                return $"Organisation.{nameof(OrganisationController.GetUsersDetail)}.userId";
+            }
+        }
+
         public async Task<Update> GetCommentUpdateAsync(ApplicationUser user, Job job, Comment comment)
         {
             var update = new Update
@@ -142,7 +153,7 @@ namespace GoApi.Services.Implementations
                 Time = DateTime.UtcNow,
                 Oid = job.Oid
             };
-            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = "", Name = user.FullName }, Syntax = null });
+            update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = user.Id, Location = _userDetailLocation, Name = user.FullName }, Syntax = null });
             update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = $" commented:\n\n{comment.Text}\n\n" });
             if (comment.UsersTagged.Any())
             {
@@ -150,11 +161,32 @@ namespace GoApi.Services.Implementations
                 foreach (var u in comment.UsersTagged)
                 {
                     var _user = await _userManager.FindByIdAsync(u);
-                    update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = u, Location = "", Name = _user.FullName } });
+                    update.UpdateList.Add(new UpdateDetail { Resource = new ResourceUpdateDetail { Id = u, Location = _userDetailLocation, Name = _user.FullName } });
                     update.UpdateList.Add(new UpdateDetail { Resource = null, Syntax = $" ({_user.Email})\n" });
                 }
             }
             return update;
+        }
+
+        public void RemapLocationLink(UpdateDetail updateDetail, IUrlHelper Url, HttpRequest Request)
+        {
+            if (updateDetail.Resource != null)
+            {
+                // First element is the controller
+                // Second element is the method
+                // Third element is the id name
+                string[] paths = updateDetail.Resource.Location.Split('.');
+                var location = Url.Action(paths[1], paths[0], new Dictionary<string, string> { { paths[2], updateDetail.Resource.Id } }, Request.Scheme);
+                updateDetail.Resource.Location = location;
+            }
+        }
+
+        public void RemapLocationLink(Update update, IUrlHelper Url, HttpRequest Request)
+        {
+            foreach (var udet in update.UpdateList)
+            {
+                RemapLocationLink(udet, Url, Request);
+            }
         }
     } 
 }

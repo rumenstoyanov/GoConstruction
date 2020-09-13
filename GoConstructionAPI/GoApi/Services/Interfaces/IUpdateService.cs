@@ -1,5 +1,6 @@
 ﻿using GoApi.Data.Dtos;
 using GoApi.Data.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,9 @@ namespace GoApi.Services.Interfaces
 
 
         Task<Update> GetCommentUpdateAsync(ApplicationUser user, Job job, Comment comment);
+
+        void RemapLocationLink(UpdateDetail updateDetail, IUrlHelper Url, HttpRequest Request);
+        void RemapLocationLink(Update update, IUrlHelper Url, HttpRequest Request);
 
 
     }
