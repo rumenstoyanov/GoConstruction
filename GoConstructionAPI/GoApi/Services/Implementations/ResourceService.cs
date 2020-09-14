@@ -23,12 +23,15 @@ namespace GoApi.Services.Implementations
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ICacheService _cacheService;
 
-        public ResourceService(AppDbContext appDbContext, IMapper mapper, UserManager<ApplicationUser> userManager)
+        public ResourceService(AppDbContext appDbContext, IMapper mapper, UserManager<ApplicationUser> userManager, ICacheService cacheService)
         {
             _appDbContext = appDbContext;
             _mapper = mapper;
             _userManager = userManager;
+            _cacheService = cacheService;
+            
         }
 
         public async Task CreateJobAsync(Site site, Job mappedJob, Guid oid, ApplicationUser user, bool IsRoot)
@@ -63,9 +66,9 @@ namespace GoApi.Services.Implementations
 
         }
 
-        public string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, string userId)
+        public string GetUserDetailLocation(IUrlHelper url, HttpRequest request, string userId)
         {
-            var location = Url.Action(nameof(OrganisationController.GetUsersDetail), "Organisation", new { userId = userId }, Request.Scheme);
+            var location = url.Action(nameof(OrganisationController.GetUsersDetail), "Organisation", new { userId = userId }, request.Scheme);
             return location;
         }
 
@@ -75,25 +78,25 @@ namespace GoApi.Services.Implementations
             mappedDto.Status = _appDbContext.JobStatuses.FirstOrDefault(js => js.Id == dto.JobStatusId).Title;
             return mappedDto;
         }
-
+        
         public IEnumerable<UserJob> GetAssigneeUserIdsForValidJob(Guid jobId)
         {
             return _appDbContext.Assignments.Where(uj => uj.JobId == jobId);
         }
 
-        public async Task<AbridgedUserInfoResponseDto> GetAbridgedUserInfoFromUserIdAsync(string userId, IUrlHelper Url, HttpRequest Request)
+        public async Task<AbridgedUserInfoResponseDto> GetAbridgedUserInfoFromUserIdAsync(string userId, IUrlHelper url, HttpRequest request)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            var location = GetUserDetailLocation(Url, Request, user.Id);
+            var location = GetUserDetailLocation(url, request, user.Id);
             return new AbridgedUserInfoResponseDto { Id = user.Id, FullName = user.FullName, Location = location };
         }
 
-        public async Task<List<AbridgedUserInfoResponseDto>> GetAbridgedUserInfoFromUserIdAsync(List<string> userIds, IUrlHelper Url, HttpRequest Request)
+        public async Task<List<AbridgedUserInfoResponseDto>> GetAbridgedUserInfoFromUserIdAsync(List<string> userIds, IUrlHelper url, HttpRequest request)
         {
             var outList = new List<AbridgedUserInfoResponseDto>();
             foreach (var userId in userIds)
             {
-                outList.Add(await GetAbridgedUserInfoFromUserIdAsync(userId, Url, Request));
+                outList.Add(await GetAbridgedUserInfoFromUserIdAsync(userId, url, request));
             }
             return outList;
         }
@@ -101,6 +104,22 @@ namespace GoApi.Services.Implementations
         public bool IsNewSiteFriendlyIdValid(SiteCreateRequestDto dto, Guid oid)
         {
             return !_appDbContext.Sites.Any(s => s.IsActive && s.Oid == oid && s.FriendlyId == dto.FriendlyId);
+        }
+
+        public async Task FlushCacheForNewSiteAsync(HttpRequest request, Guid oid)
+        {
+            // The endpoint for creating a new site and getting all sites is the same so the request path generates the same cache key.
+            await _cacheService.TryDeleteCacheValueAsync(request, oid);
+        }
+
+        public async Task FlushCacheForSiteMutationAsync(HttpRequest request, IUrlHelper url, Guid oid)
+        {
+            // The endpoint to get this site is the same as any mutation endpoint so generates the same cache key.
+            await _cacheService.TryDeleteCacheValueAsync(request, oid);
+
+            // The get all sites endpoint.
+            var location = url.Action(nameof(SitesController.GetSites), "Sites", null, request.Scheme);
+            await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(location, oid));
         }
     }
 }

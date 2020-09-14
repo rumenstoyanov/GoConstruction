@@ -79,7 +79,7 @@ namespace GoApi.Controllers
 
             await _appDbContext.AddAsync(mappedSite);
             await _appDbContext.SaveChangesAsync();
-            await _cacheService.TryDeleteCacheValueAsync(Request, oid);
+            await _resourceService.FlushCacheForNewSiteAsync(Request, oid);
 
             return CreatedAtRoute(nameof(GetSitesDetail), new { siteId = mappedSite.Id }, _mapper.Map<SiteReadResponseDto>(mappedSite));
 
@@ -134,6 +134,7 @@ namespace GoApi.Controllers
             {
                 site.IsActive = false;
                 await _appDbContext.SaveChangesAsync();
+                await _resourceService.FlushCacheForSiteMutationAsync(Request, Url, oid);
                 return NoContent();
             }
             return NotFound();

@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using System.Text;
 using GoApi.Data.Constants;
+using GoApi.Extensions;
 
 namespace GoApi.Services.Implementations
 {
@@ -24,7 +25,7 @@ namespace GoApi.Services.Implementations
 
         private string BuildCacheKeyFromRequest(HttpRequest request, Guid oid)
         {
-            return $"{oid}|{request.Path}";
+            return $"{oid}|{request.Path}".ToCacheKeyFormat();
         }
 
         public async Task SetCacheValueAsync<T>(string key, T value) where T : class
@@ -75,6 +76,13 @@ namespace GoApi.Services.Implementations
         public async Task TryDeleteCacheValueAsync(HttpRequest request, Guid oid)
         {
             await TryDeleteCacheValueAsync(BuildCacheKeyFromRequest(request, oid));
+        }
+
+        public string BuildCacheKeyFromUrl(string url, Guid oid)
+        {
+            var uri = new Uri(url);
+            var key = $"{oid}|{uri.LocalPath}".ToCacheKeyFormat();
+            return key;
         }
     }
 }

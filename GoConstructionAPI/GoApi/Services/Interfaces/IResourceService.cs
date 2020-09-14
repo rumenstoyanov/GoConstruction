@@ -13,7 +13,7 @@ namespace GoApi.Services.Interfaces
     {
         Task CreateJobAsync(Site site, Job mappedJob, Guid oid, ApplicationUser user, bool IsRoot);
 
-        string GetUserDetailLocation(IUrlHelper Url, HttpRequest Request, string userId);
+        string GetUserDetailLocation(IUrlHelper url, HttpRequest request, string userId);
 
         JobUpdateInternalDto GetJobUpdateFriendly(JobUpdateRequestDto dto);
 
@@ -22,11 +22,14 @@ namespace GoApi.Services.Interfaces
         /// <summary>
         /// userId known to be valid a priori.
         /// </summary>
-        Task<AbridgedUserInfoResponseDto> GetAbridgedUserInfoFromUserIdAsync(string userId, IUrlHelper Url, HttpRequest Request);
+        Task<AbridgedUserInfoResponseDto> GetAbridgedUserInfoFromUserIdAsync(string userId, IUrlHelper url, HttpRequest request);
 
-        Task<List<AbridgedUserInfoResponseDto>> GetAbridgedUserInfoFromUserIdAsync(List<string> userIds, IUrlHelper Url, HttpRequest Request);
+        Task<List<AbridgedUserInfoResponseDto>> GetAbridgedUserInfoFromUserIdAsync(List<string> userIds, IUrlHelper url, HttpRequest request);
 
         bool IsNewSiteFriendlyIdValid(SiteCreateRequestDto dto, Guid oid);
+
+        Task FlushCacheForNewSiteAsync(HttpRequest request, Guid oid);
+        Task FlushCacheForSiteMutationAsync(HttpRequest request, IUrlHelper url, Guid oid);
 
     }
 }
