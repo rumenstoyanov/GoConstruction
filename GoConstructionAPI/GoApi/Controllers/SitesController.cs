@@ -62,9 +62,15 @@ namespace GoApi.Controllers
         [Authorize(Policy = Seniority.ContractorOrAbovePolicy)]
         public async Task<IActionResult> PostSites([FromBody] SiteCreateRequestDto model)
         {
+            var oid = _authService.GetRequestOid(Request);
+            if (!_resourceService.IsNewSiteFriendlyIdValid(model, oid))
+            {
+                string errorKey = nameof(model.FriendlyId);
+                ModelState.AddModelError(errorKey, "There already exists a Site with this ID.");
+                return ValidationProblem(ModelState);
+            }
 
             var mappedSite = _mapper.Map<Site>(model);
-            var oid = _authService.GetRequestOid(Request);
             var user = await _userManager.GetUserAsync(User);
             mappedSite.Oid = oid;
             mappedSite.CreatedByUserId = user.Id;
@@ -73,6 +79,7 @@ namespace GoApi.Controllers
 
             await _appDbContext.AddAsync(mappedSite);
             await _appDbContext.SaveChangesAsync();
+            await _cacheService.TryDeleteCacheValueAsync(Request, oid);
 
             return CreatedAtRoute(nameof(GetSitesDetail), new { siteId = mappedSite.Id }, _mapper.Map<SiteReadResponseDto>(mappedSite));
 
@@ -101,10 +108,17 @@ namespace GoApi.Controllers
         public async Task<IActionResult> GetSitesDetail(Guid siteId)
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<SiteReadResponseDto>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == siteId && s.IsActive && s.Oid == oid);
             if (site != null)
             {
                 var mappedSite = _mapper.Map<SiteReadResponseDto>(site);
+                await _cacheService.SetCacheValueAsync(Request, oid, mappedSite);
                 return Ok(mappedSite);
             }
             return NotFound();

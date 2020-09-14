@@ -98,6 +98,9 @@ namespace GoApi.Services.Implementations
             return outList;
         }
 
-
+        public bool IsNewSiteFriendlyIdValid(SiteCreateRequestDto dto, Guid oid)
+        {
+            return !_appDbContext.Sites.Any(s => s.IsActive && s.Oid == oid && s.FriendlyId == dto.FriendlyId);
+        }
     }
 }

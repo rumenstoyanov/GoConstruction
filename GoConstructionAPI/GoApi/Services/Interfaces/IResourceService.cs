@@ -26,5 +26,7 @@ namespace GoApi.Services.Interfaces
 
         Task<List<AbridgedUserInfoResponseDto>> GetAbridgedUserInfoFromUserIdAsync(List<string> userIds, IUrlHelper Url, HttpRequest Request);
 
+        bool IsNewSiteFriendlyIdValid(SiteCreateRequestDto dto, Guid oid);
+
     }
 }

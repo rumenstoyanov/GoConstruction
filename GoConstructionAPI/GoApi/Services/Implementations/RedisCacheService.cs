@@ -61,5 +61,20 @@ namespace GoApi.Services.Implementations
         {
             return await TryGetCacheValueAsync<T>(BuildCacheKeyFromRequest(request, oid));
         }
+
+        public async Task TryDeleteCacheValueAsync(string key)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            var db = _connectionMultiplexer.GetDatabase();
+            await db.KeyDeleteAsync(key);
+        }
+
+        public async Task TryDeleteCacheValueAsync(HttpRequest request, Guid oid)
+        {
+            await TryDeleteCacheValueAsync(BuildCacheKeyFromRequest(request, oid));
+        }
     }
 }

@@ -12,5 +12,7 @@ namespace GoApi.Services.Interfaces
         Task SetCacheValueAsync<T>(HttpRequest request, Guid oid, T value) where T : class;
         Task<T> TryGetCacheValueAsync<T>(string key) where T : class;
         Task<T> TryGetCacheValueAsync<T>(HttpRequest request, Guid oid) where T : class;
+        Task TryDeleteCacheValueAsync(string key);
+        Task TryDeleteCacheValueAsync(HttpRequest request, Guid oid);
     }
 }
