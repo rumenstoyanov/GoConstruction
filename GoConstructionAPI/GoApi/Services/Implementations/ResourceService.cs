@@ -109,17 +109,62 @@ namespace GoApi.Services.Implementations
         public async Task FlushCacheForNewSiteAsync(HttpRequest request, Guid oid)
         {
             // The endpoint for creating a new site and getting all sites is the same so the request path generates the same cache key.
-            await _cacheService.TryDeleteCacheValueAsync(request, oid);
+            await _cacheService.TryDeleteCacheValueAsync(request, oid); // /api/sites/
         }
 
         public async Task FlushCacheForSiteMutationAsync(HttpRequest request, IUrlHelper url, Guid oid)
         {
             // The endpoint to get this site is the same as any mutation endpoint so generates the same cache key.
-            await _cacheService.TryDeleteCacheValueAsync(request, oid);
+            await _cacheService.TryDeleteCacheValueAsync(request, oid); // /api/sites/{siteId}/
 
             // The get all sites endpoint.
-            var location = url.Action(nameof(SitesController.GetSites), "Sites", null, request.Scheme);
-            await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(location, oid));
+            var allSitesUrl = url.Action(nameof(SitesController.GetSites), "Sites", null, request.Scheme);
+            await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(allSitesUrl, oid)); // /api/sites/
         }
+
+        public async Task FlushCacheForNewRootJobAsync(HttpRequest request, IUrlHelper url, Guid oid)
+        {
+            // The endpoint for creating a new root job and getting all root jobs is the same so the request path generates the same cache key.
+            await _cacheService.TryDeleteCacheValueAsync(request, oid); // /api/sites/{siteId}/jobs/
+
+            // Also need to flush the all jobs list.
+            var allJobsUrl = url.Action(nameof(JobsController.GetJobs), "Jobs", null, request.Scheme);
+            await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(allJobsUrl, oid)); // /api/jobs/
+
+        }
+
+        public async Task FlushCacheForNewNonRootJobAsync(HttpRequest request, IUrlHelper url, Guid oid, Guid parentJobId)
+        {
+            // The endpoint for creating a new non-root job and getting all jobs is the same so the request path generates the same cache key.
+            await _cacheService.TryDeleteCacheValueAsync(request, oid); // /api/jobs/
+
+            var childJobsUrl = url.Action(nameof(JobsController.GetJobChildren), "Jobs", new { jobId = parentJobId }, request.Scheme);
+            await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(childJobsUrl, oid)); // /api/jobs/{jobId}/children/
+        }
+
+        public async Task FlushCacheForJobMutationAsync(HttpRequest request, IUrlHelper url, Guid oid, Job job)
+        {
+            // The endpoint to get this job is the same as any mutation endpoint so generates the same cache key.
+            await _cacheService.TryDeleteCacheValueAsync(request, oid); // /api/jobs/{jobId}/
+
+            // The get all jobs endpoint.
+            var allJobsUrl = url.Action(nameof(JobsController.GetJobs), "Jobs", null, request.Scheme);
+            await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(allJobsUrl, oid)); // /api/jobs/
+
+            if (job.ParentJobId.HasValue)
+            {
+                // Non-root job
+                var childJobsUrl = url.Action(nameof(JobsController.GetJobChildren), "Jobs", new { jobId = job.ParentJobId.Value }, request.Scheme);
+                await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(childJobsUrl, oid)); // /api/jobs/{jobId}/children/
+            }
+            else
+            {
+                // Root job
+                var rootJobsUrl = url.Action(nameof(SitesController.GetRootJobs), "Sites",  new { siteId = job.SiteId }, request.Scheme);
+                await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(rootJobsUrl, oid)); // /api/sites/{siteId}/jobs/
+            }
+        }
+
+
     }
 }

@@ -29,7 +29,17 @@ namespace GoApi.Services.Interfaces
         bool IsNewSiteFriendlyIdValid(SiteCreateRequestDto dto, Guid oid);
 
         Task FlushCacheForNewSiteAsync(HttpRequest request, Guid oid);
+        /// <summary>
+        /// Mutation is PUT, PATCH or DELETE.
+        /// </summary>
         Task FlushCacheForSiteMutationAsync(HttpRequest request, IUrlHelper url, Guid oid);
+
+        Task FlushCacheForNewRootJobAsync(HttpRequest request, IUrlHelper url, Guid oid);
+        Task FlushCacheForNewNonRootJobAsync(HttpRequest request, IUrlHelper url, Guid oid, Guid parentJobId);
+        /// <summary>
+        /// Mutation is PUT, PATCH or DELETE. Note that all Jobs are mutated at the same endpoints.
+        /// </summary>
+        Task FlushCacheForJobMutationAsync(HttpRequest request, IUrlHelper url, Guid oid, Job job);
 
     }
 }
