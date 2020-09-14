@@ -11,8 +11,6 @@ namespace GoApi.Extensions
         /// <summary>
         /// Forces string into conventions for cache keys.
         /// </summary>
-        /// <param name="s"></param>
-        /// <returns></returns>
         public static string ToCacheKeyFormat(this string s)
         {
             var sb = new StringBuilder();
