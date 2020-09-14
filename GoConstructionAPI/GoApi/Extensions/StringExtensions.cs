@@ -9,7 +9,7 @@ namespace GoApi.Extensions
     public static class StringExtensions
     {
         /// <summary>
-        /// Method defining conventions we follow for cache keys.
+        /// Forces string into conventions for cache keys.
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
