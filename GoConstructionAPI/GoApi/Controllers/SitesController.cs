@@ -174,6 +174,7 @@ namespace GoApi.Controllers
                     });
                 }
                 await _appDbContext.SaveChangesAsync();
+                await _resourceService.FlushCacheForSiteMutationAsync(Request, Url, oid);
                 return NoContent();
             }
             return NotFound();
