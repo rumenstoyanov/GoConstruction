@@ -22,30 +22,41 @@ namespace GoApi.Controllers
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
         private readonly IUpdateService _updateService;
+        private readonly ICacheService _cacheService;
 
         public UpdatesController(
             IAuthService authService,
             AppDbContext appDbContext,
             IMapper mapper,
-            IUpdateService updateService
+            IUpdateService updateService,
+            ICacheService cacheService
             )
         {
             _authService = authService;
             _appDbContext = appDbContext;
             _mapper = mapper;
             _updateService = updateService;
+            _cacheService = cacheService;
         }
 
         [HttpGet("{resourceId}")]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-        public IActionResult GetUpdates(Guid resourceId)
+        public async Task<IActionResult> GetUpdates(Guid resourceId)
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<UpdateReadResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var updates = _appDbContext.Updates.Where(u => u.Oid == oid && u.UpdatedResourceId == resourceId); // Note that updates for inactive resources will still be retrievable,
                                                                                                                // as we do not store active status since this is a general update table.
             foreach (var u in updates) _updateService.RemapLocationLink(u, Url, Request);
             var mappedUpdates = _mapper.Map<IEnumerable<UpdateReadResponseDto>>(updates);
-            return Ok(mappedUpdates.OrderBy(u => u.Time));
+            var orderedMappedUpdates = mappedUpdates.OrderBy(u => u.Time);
+            await _cacheService.SetCacheValueWithExpiryAsync(Request, oid, orderedMappedUpdates);
+            return Ok(orderedMappedUpdates);
         }
     }
 }

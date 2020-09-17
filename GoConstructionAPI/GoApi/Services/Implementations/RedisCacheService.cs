@@ -16,11 +16,13 @@ namespace GoApi.Services.Implementations
     {
         private readonly IConnectionMultiplexer _connectionMultiplexer;
         private readonly bool _isEnabled;
+        private readonly int _timeToLiveSeconds;
 
         public RedisCacheService(IConnectionMultiplexer connectionMultiplexer, RedisSettings redisSettings)
         {
             _connectionMultiplexer = connectionMultiplexer;
             _isEnabled = redisSettings.IsEnabled;
+            _timeToLiveSeconds = redisSettings.TimeToLiveSeconds;
         }
 
         private string BuildCacheKeyFromRequest(HttpRequest request, Guid oid)
@@ -40,6 +42,21 @@ namespace GoApi.Services.Implementations
         public async Task SetCacheValueAsync<T>(HttpRequest request, Guid oid, T value) where T : class
         {
             await SetCacheValueAsync(BuildCacheKeyFromRequest(request, oid), value);
+        }
+        public async Task SetCacheValueWithExpiryAsync<T>(string key, T value) where T : class
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            var db = _connectionMultiplexer.GetDatabase();
+            await db.StringSetAsync(key, JsonConvert.SerializeObject(value));
+            await db.KeyExpireAsync(key, new TimeSpan(0, 0, _timeToLiveSeconds));
+        }
+
+        public async Task SetCacheValueWithExpiryAsync<T>(HttpRequest request, Guid oid, T value) where T : class
+        {
+            await SetCacheValueWithExpiryAsync(BuildCacheKeyFromRequest(request, oid), value);
         }
 
         public async Task<T> TryGetCacheValueAsync<T>(string key) where T : class
@@ -84,5 +101,7 @@ namespace GoApi.Services.Implementations
             var key = $"{oid}|{uri.LocalPath}".ToCacheKeyFormat();
             return key;
         }
+
+
     }
 }

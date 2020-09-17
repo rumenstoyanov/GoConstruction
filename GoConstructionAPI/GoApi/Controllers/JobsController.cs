@@ -221,7 +221,7 @@ namespace GoApi.Controllers
 
             var mappedStatuses = _mapper.Map<IEnumerable<JobStatusReadResponseDto>>(_appDbContext.JobStatuses);
             await _cacheService.SetCacheValueAsync(cacheKey, mappedStatuses);
-            return Ok();
+            return Ok(mappedStatuses);
         }
 
         [HttpGet("{jobId}/assignees")]

@@ -12,5 +12,6 @@ namespace GoApi.Data.Constants
     {
         public bool IsEnabled { get; set; }
         public string ConnectionString { get; set; }
+        public int TimeToLiveSeconds { get; set; }
     }
 }
