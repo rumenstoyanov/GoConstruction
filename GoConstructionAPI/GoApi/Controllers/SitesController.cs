@@ -194,6 +194,7 @@ namespace GoApi.Controllers
                 var user = await _userManager.GetUserAsync(User);
 
                 await _resourceService.CreateJobAsync(site, mappedJob, oid, user, true);
+                await _resourceService.FlushCacheForNewRootJobAsync(Request, Url, oid);
 
                 return CreatedAtRoute(nameof(JobsController.GetJobsDetail), new { jobId = mappedJob.Id }, _mapper.Map<JobReadResponseDto>(mappedJob));
             }
@@ -204,12 +205,19 @@ namespace GoApi.Controllers
 
         [HttpGet("{siteId}/jobs")]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-        public IActionResult GetRootJobs(Guid siteId)
+        public async Task<IActionResult> GetRootJobs(Guid siteId)
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<JobReadResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             // Need valid oid, siteId, active and a null parentJobId as seek root jobs only.
             var jobs = _appDbContext.Jobs.Where(j => j.Oid == oid && j.IsActive && j.SiteId == siteId && !j.ParentJobId.HasValue);
             var mappedJobs = _mapper.Map<IEnumerable<JobReadResponseDto>>(jobs);
+            await _cacheService.SetCacheValueAsync(Request, oid, mappedJobs);
             return Ok(mappedJobs);
         }
     }

@@ -32,6 +32,7 @@ namespace GoApi.Controllers
         private readonly IUpdateService _updateService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IBackgroundTaskQueue _queue;
+        private readonly ICacheService _cacheService;
         public JobsController(
             AppDbContext appDbContext,
             IMapper mapper,
@@ -40,7 +41,8 @@ namespace GoApi.Controllers
             IResourceService resourceService,
             IUpdateService updateService,
             IServiceScopeFactory serviceScopeFactory,
-            IBackgroundTaskQueue queue
+            IBackgroundTaskQueue queue,
+            ICacheService cacheService
             )
         {
             _appDbContext = appDbContext;
@@ -51,17 +53,25 @@ namespace GoApi.Controllers
             _updateService = updateService;
             _serviceScopeFactory = serviceScopeFactory;
             _queue = queue;
+            _cacheService = cacheService;
         }
 
 
 
         [HttpGet]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-        public IActionResult GetJobs()
+        public async Task<IActionResult> GetJobs()
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<JobReadResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var jobs = _appDbContext.Jobs.Where(j => j.Oid == oid && j.IsActive);
             var mappedJobs = _mapper.Map<IEnumerable<JobReadResponseDto>>(jobs);
+            await _cacheService.SetCacheValueAsync(Request, oid, mappedJobs);
             return Ok(mappedJobs);
 
         }
@@ -71,10 +81,17 @@ namespace GoApi.Controllers
         public async Task<IActionResult> GetJobsDetail(Guid jobId)
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<JobReadResponseDto>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
             if (job != null)
             {
                 var mappedJob = _mapper.Map<JobReadResponseDto>(job);
+                await _cacheService.SetCacheValueAsync(Request, oid, mappedJob);
                 return Ok(mappedJob);
             }
             return NotFound();
@@ -82,11 +99,18 @@ namespace GoApi.Controllers
 
         [HttpGet("{jobId}/children")]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-        public IActionResult GetJobChildren(Guid jobId)
+        public async Task<IActionResult> GetJobChildren(Guid jobId)
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<JobReadResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var jobs = _appDbContext.Jobs.Where(j => j.Oid == oid && j.IsActive && j.ParentJobId.HasValue && j.ParentJobId.Value == jobId);
             var mappedJobs = _mapper.Map<IEnumerable<JobReadResponseDto>>(jobs);
+            await _cacheService.SetCacheValueAsync(Request, oid, mappedJobs);
             return Ok(mappedJobs);
         }
 
@@ -104,6 +128,7 @@ namespace GoApi.Controllers
                 var site = await _appDbContext.Sites.FirstOrDefaultAsync(s => s.Id == parentJob.SiteId);
 
                 await _resourceService.CreateJobAsync(site, mappedJob, oid, user, false); // Not a root job, the parentJobId is already mapped in by the IMapper, so IsRoot = false.
+                await _resourceService.FlushCacheForNewNonRootJobAsync(Request, Url, oid, parentJob.Id);
 
                 return CreatedAtRoute(nameof(GetJobsDetail), new { jobId = mappedJob.Id }, _mapper.Map<JobReadResponseDto>(mappedJob));
             }
@@ -120,6 +145,7 @@ namespace GoApi.Controllers
             {
                 job.IsActive = false;
                 await _appDbContext.SaveChangesAsync();
+                await _resourceService.FlushCacheForJobMutationAsync(Request, Url, oid, job);
                 return NoContent();
             }
             return NotFound();
@@ -173,6 +199,7 @@ namespace GoApi.Controllers
                     });
                 }
                 await _appDbContext.SaveChangesAsync();
+                await _resourceService.FlushCacheForJobMutationAsync(Request, Url, oid, job);
                 return NoContent();
 
             }
