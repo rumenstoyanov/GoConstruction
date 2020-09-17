@@ -374,6 +374,7 @@ namespace GoApi.Controllers
                     }
                 });
                 await _appDbContext.SaveChangesAsync();
+                await _cacheService.TryDeleteCacheValueAsync(Request, oid);
                 return Ok();
 
             }
@@ -385,6 +386,12 @@ namespace GoApi.Controllers
         public async Task<IActionResult> GetComments(Guid jobId)
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<CommentReadResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
             if (job != null)
             {
@@ -397,7 +404,9 @@ namespace GoApi.Controllers
                     mappedComment.UsersTaggedInfo = await _resourceService.GetAbridgedUserInfoFromUserIdAsync(comment.UsersTagged, Url, Request);
                     commentsOut.Add(mappedComment);
                 }
-                return Ok(commentsOut.OrderBy(c => c.TimePosted));
+                var orderedCommentsOut = commentsOut.OrderBy(c => c.TimePosted);
+                await _cacheService.SetCacheValueAsync(Request, oid, orderedCommentsOut);
+                return Ok(orderedCommentsOut);
             }
             return NotFound();
         }
