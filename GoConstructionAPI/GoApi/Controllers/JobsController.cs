@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
+using GoApi.Extensions;
 
 namespace GoApi.Controllers
 {
@@ -208,9 +209,19 @@ namespace GoApi.Controllers
 
         [HttpGet("statuses")]
         [Authorize(Policy = Seniority.WorkerOrAbovePolicy)]
-        public IActionResult GetJobStatuses()
+        public async Task<IActionResult> GetJobStatuses()
         {
-            return Ok(_mapper.Map<IEnumerable<JobStatusReadResponseDto>>(_appDbContext.JobStatuses));
+            // Not Organisation-specific
+            var cacheKey = $"all|{Request.Path}".ToCacheKeyFormat();
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<JobStatusReadResponseDto>>(cacheKey);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
+            var mappedStatuses = _mapper.Map<IEnumerable<JobStatusReadResponseDto>>(_appDbContext.JobStatuses);
+            await _cacheService.SetCacheValueAsync(cacheKey, mappedStatuses);
+            return Ok();
         }
 
         [HttpGet("{jobId}/assignees")]
