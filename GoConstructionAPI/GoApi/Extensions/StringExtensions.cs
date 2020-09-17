@@ -15,7 +15,7 @@ namespace GoApi.Extensions
         {
             var sb = new StringBuilder();
             
-            // Lowecase path.
+            // Lowercase path.
             sb.Append(s.ToLower());
 
             // Ending in a backslash.
