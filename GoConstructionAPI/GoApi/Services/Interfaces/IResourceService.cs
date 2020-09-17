@@ -41,5 +41,7 @@ namespace GoApi.Services.Interfaces
         /// </summary>
         Task FlushCacheForJobMutationAsync(HttpRequest request, IUrlHelper url, Guid oid, Job job);
 
+        Task FlushCacheForNewUserAsync(HttpRequest request, IUrlHelper url, Guid oid);
+
     }
 }

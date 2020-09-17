@@ -29,6 +29,7 @@ namespace GoApi.Controllers
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
         private readonly IResourceService _resourceService;
+        private readonly ICacheService _cacheService;
 
 
         public OrganisationController(
@@ -36,7 +37,8 @@ namespace GoApi.Controllers
             AppDbContext appDbContext,
             IMapper mapper,
             IAuthService authService,
-            IResourceService resourceService
+            IResourceService resourceService,
+            ICacheService cacheService
             )
         {
             _userManager = userManager;
@@ -44,16 +46,23 @@ namespace GoApi.Controllers
             _mapper = mapper;
             _authService = authService;
             _resourceService = resourceService;
-
+            _cacheService = cacheService;
         }
 
         [HttpGet("info")]
         public async Task<IActionResult> GetOrganisationInfo()
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<OrganisationInfoResponsetDto>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var org = await _appDbContext.Organisations.FirstOrDefaultAsync(o => o.Id == oid);
             if (org != null)
             {
+                await _cacheService.SetCacheValueAsync(Request, oid, org);
                 return Ok(_mapper.Map<OrganisationInfoResponsetDto>(org));
             }
             return BadRequest();
@@ -64,6 +73,12 @@ namespace GoApi.Controllers
         public async Task<IActionResult> GetUsers()
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<UserInfoResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var users = await _authService.GetValidUsersAsync(oid);
             var mappedUsers = new List<UserInfoResponseDto>();
             foreach (var user in users)
@@ -72,6 +87,8 @@ namespace GoApi.Controllers
                 mappedUser.Position = (await _userManager.GetRolesAsync(user)).First();
                 mappedUsers.Add(mappedUser);
             }
+
+            await _cacheService.SetCacheValueAsync(Request, oid, mappedUsers);
             return Ok(mappedUsers);
         }
 
@@ -79,6 +96,12 @@ namespace GoApi.Controllers
         public async Task<IActionResult> GetUsersAbridged()
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<AbridgedUserInfoResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var users = await _authService.GetValidUsersAsync(oid);
             var mappedUsers = new List<AbridgedUserInfoResponseDto>();
             foreach (var user in users)
@@ -87,6 +110,8 @@ namespace GoApi.Controllers
                 mappedUser.Location = _resourceService.GetUserDetailLocation(Url, Request, user.Id);
                 mappedUsers.Add(mappedUser);
             }
+
+            await _cacheService.SetCacheValueAsync(Request, oid, mappedUsers);
             return Ok(mappedUsers);
         }
 

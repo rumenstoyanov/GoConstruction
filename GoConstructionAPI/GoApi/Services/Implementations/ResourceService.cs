@@ -165,6 +165,15 @@ namespace GoApi.Services.Implementations
             }
         }
 
+        public async Task FlushCacheForNewUserAsync(HttpRequest request, IUrlHelper url, Guid oid)
+        {
+            // The all users endpoint.
+            var allUsersUrl = url.Action(nameof(OrganisationController.GetUsers), "Organisation", null, request.Scheme);
+            await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(allUsersUrl, oid));
 
+            // The all users abridged endpoint.
+            var allUsersAbridgedUrl = url.Action(nameof(OrganisationController.GetUsersAbridged), "Organisation", null, request.Scheme);
+            await _cacheService.TryDeleteCacheValueAsync(_cacheService.BuildCacheKeyFromUrl(allUsersAbridgedUrl, oid));
+        }
     }
 }

@@ -113,7 +113,7 @@ namespace GoApi.Services.Implementations
                 await _userManager.AddToRoleAsync(user, seniority);
 
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token = token }, Request.Scheme);
+                var confirmationLink = Url.Action(nameof(AuthController.ConfirmEmail), "Auth", new { userId = user.Id, token = token }, Request.Scheme);
 
                 var org = await _appDbContext.Organisations.FirstOrDefaultAsync(o => o.Id == oid);
 
