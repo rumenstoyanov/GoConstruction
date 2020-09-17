@@ -229,6 +229,12 @@ namespace GoApi.Controllers
         public async Task<IActionResult> GetAssignees(Guid jobId)
         {
             var oid = _authService.GetRequestOid(Request);
+            var fromCache = await _cacheService.TryGetCacheValueAsync<IEnumerable<AbridgedUserInfoResponseDto>>(Request, oid);
+            if (fromCache != null)
+            {
+                return Ok(fromCache);
+            }
+
             var job = await _appDbContext.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.IsActive && j.Oid == oid);
             if (job != null)
             {
@@ -239,6 +245,7 @@ namespace GoApi.Controllers
                     assignees.Add(await _resourceService.GetAbridgedUserInfoFromUserIdAsync(uj.UserId, Url, Request));
                     
                 }
+                await _cacheService.SetCacheValueAsync(Request, oid, assignees);
                 return Ok(assignees);
             }
             return NotFound();
@@ -281,6 +288,7 @@ namespace GoApi.Controllers
                         });
 
                         await _appDbContext.SaveChangesAsync();
+                        await _cacheService.TryDeleteCacheValueAsync(Request, oid);
                     }
                     return Ok();
                 }
@@ -325,6 +333,7 @@ namespace GoApi.Controllers
                     });
 
                     await _appDbContext.SaveChangesAsync();
+                    await _cacheService.TryDeleteCacheValueAsync(Request, oid);
                     return NoContent();
                 }
 
