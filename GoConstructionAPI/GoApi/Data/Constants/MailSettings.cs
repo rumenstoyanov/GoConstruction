@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace GoApi.Data.Constants
 {
+    /// <summary>
+    /// Binded from configuration at startup.
+    /// </summary>
     public class MailSettings
     {
         public string SmtpServer { get; set; }

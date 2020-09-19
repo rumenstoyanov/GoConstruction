@@ -8,11 +8,10 @@ namespace GoApi.Data.Constants
     /// <summary>
     /// Binded from configuration at startup.
     /// </summary>
-    public class JwtSettings
+    public class RedisSettings
     {
-        public string Issuer { get; set; }
-        public string Audience { get; set; }
-        public string SigningKey { get; set; }
-        public double TokenLifetimeHours { get; set; }
+        public bool IsEnabled { get; set; }
+        public string ConnectionString { get; set; }
+        public int TimeToLiveSeconds { get; set; }
     }
 }

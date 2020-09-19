@@ -19,7 +19,7 @@ namespace GoApi.Tests
             var postUpdate = new SiteUpdateRequestDto { Title = "ReTestTitle", Description = "TestDescription", EndDate = new DateTime(2020, 1, 1) };
 
             // Act
-            var updateService = new UpdateService();
+            var updateService = new UpdateService(null,null,null);
             var actualDiffDict = updateService.Diff(preUpdate, postUpdate);
 
             // Assert
@@ -36,7 +36,7 @@ namespace GoApi.Tests
             var postUpdate = new SiteUpdateRequestDto { Title = "TestTitle", Description = "TestDescription", EndDate = new DateTime(2020, 1, 1) };
 
             // Act
-            var updateService = new UpdateService();
+            var updateService = new UpdateService(null, null, null);
             var actualDiffDict = updateService.Diff(preUpdate, postUpdate);
 
             // Assert
@@ -52,7 +52,7 @@ namespace GoApi.Tests
             var expected = " updated the Title to ReTestTitle";
 
             // Act
-            var updateService = new UpdateService();
+            var updateService = new UpdateService(null, null, null);
             var actual = updateService.AssembleSyntaxFromDiff(diff);
 
             // Assert
@@ -67,7 +67,7 @@ namespace GoApi.Tests
             var expected = " updated the Title to ReTestTitle, updated the Description to ReTestDescription";
 
             // Act
-            var updateService = new UpdateService();
+            var updateService = new UpdateService(null, null, null);
             var actual = updateService.AssembleSyntaxFromDiff(diff);
 
             // Assert

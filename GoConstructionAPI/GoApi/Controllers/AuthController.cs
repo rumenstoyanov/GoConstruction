@@ -33,6 +33,7 @@ namespace GoApi.Controllers
         private readonly IAuthService _authService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IBackgroundTaskQueue _queue;
+        private readonly IResourceService _resourceService;
         
 
         public AuthController(
@@ -41,7 +42,8 @@ namespace GoApi.Controllers
             IMapper mapper,
             IAuthService authService,
             IServiceScopeFactory serviceScopeFactory,
-            IBackgroundTaskQueue queue
+            IBackgroundTaskQueue queue,
+            IResourceService resourceService
             )
         {
             _userManager = userManager;
@@ -50,6 +52,7 @@ namespace GoApi.Controllers
             _authService = authService;
             _serviceScopeFactory = serviceScopeFactory;
             _queue = queue;
+            _resourceService = resourceService;
         }
 
 
@@ -193,6 +196,7 @@ namespace GoApi.Controllers
                 user.IsInitialSet = true;
                 user.PhoneNumber = model.PhoneNumber;
                 await _appDbContext.SaveChangesAsync();
+                await _resourceService.FlushCacheForNewUserAsync(Request, Url, _authService.GetRequestOid(Request));
                 return Ok();
             }
             else
