@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GoApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20200904203726_job-object")]
-    partial class jobobject
+    [Migration("20200921222833_all")]
+    partial class all
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -97,6 +97,40 @@ namespace GoApi.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("GoApi.Data.Models.Comment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PostedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("character varying(4000)")
+                        .HasMaxLength(4000);
+
+                    b.Property<DateTime>("TimePosted")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<List<string>>("UsersTagged")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("PostedByUserId");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("GoApi.Data.Models.Job", b =>
                 {
                     b.Property<Guid>("Id")
@@ -115,8 +149,7 @@ namespace GoApi.Migrations
 
                     b.Property<string>("FriendlyId")
                         .IsRequired()
-                        .HasColumnType("character varying(16)")
-                        .HasMaxLength(16);
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -131,7 +164,7 @@ namespace GoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ParentJobId")
+                    b.Property<Guid?>("ParentJobId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("SiteId")
@@ -270,6 +303,28 @@ namespace GoApi.Migrations
                     b.ToTable("Updates");
                 });
 
+            modelBuilder.Entity("GoApi.Data.Models.UserJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Assignments");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -400,6 +455,21 @@ namespace GoApi.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("GoApi.Data.Models.Comment", b =>
+                {
+                    b.HasOne("GoApi.Data.Models.Job", "Job")
+                        .WithMany("Comments")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GoApi.Data.Models.ApplicationUser", "PostedByUser")
+                        .WithMany("Comments")
+                        .HasForeignKey("PostedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("GoApi.Data.Models.Job", b =>
                 {
                     b.HasOne("GoApi.Data.Models.JobStatus", "JobStatus")
@@ -422,9 +492,7 @@ namespace GoApi.Migrations
 
                     b.HasOne("GoApi.Data.Models.Job", "ParentJob")
                         .WithMany("Jobs")
-                        .HasForeignKey("ParentJobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ParentJobId");
 
                     b.HasOne("GoApi.Data.Models.Site", "Site")
                         .WithMany("Jobs")
@@ -453,6 +521,21 @@ namespace GoApi.Migrations
                     b.HasOne("GoApi.Data.Models.Organisation", "Organisation")
                         .WithMany("Updates")
                         .HasForeignKey("Oid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GoApi.Data.Models.UserJob", b =>
+                {
+                    b.HasOne("GoApi.Data.Models.Job", "Job")
+                        .WithMany("Assignments")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GoApi.Data.Models.ApplicationUser", "Assignee")
+                        .WithMany("Assignments")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
