@@ -28,7 +28,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace GoApi.Tests
+namespace GoApi.Tests.Integration
 {
     public class IntegrationTest
     {

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace GoApi.Tests
+namespace GoApi.Tests.Integration
 {
     public class AuthTests : IntegrationTest
     {
