@@ -46,6 +46,10 @@ namespace GoApi.Tests.Integration
                 {
                     builder.ConfigureServices(services =>
                     {
+                        // Build an intermediate service provider so that we can resolve instances of services in this method.
+                        var intermediateProvider = services.BuildServiceProvider();
+                        // Get the live database credentials.
+                        var pgSqlSettings = intermediateProvider.GetService<PgSqlSettings>();
 
                         // Remove the current db context - this is linked to the live database.
                         var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
@@ -54,14 +58,9 @@ namespace GoApi.Tests.Integration
                             services.Remove(descriptor);
                         }
 
-                        // Build an intermediate service provider so that we can resolve instances of services in this method.
-                        var intermediateProvider = services.BuildServiceProvider();
-
-                        // Get the live database credentials.
-                        var pgSqlSettings = intermediateProvider.GetService<PgSqlSettings>();
-
                         // Construct a throwaway database with it.
-                        _throwawayDatabase = ThrowawayDatabase.Create();
+                        _throwawayDatabase = ThrowawayDatabase.Create(pgSqlSettings.Username, pgSqlSettings.Password, pgSqlSettings.Host);
+                        //_throwawayDatabase = ThrowawayDatabase.Create("postgres", "learncode", "localhost");
                         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(_throwawayDatabase.ConnectionString));
 
 
@@ -69,7 +68,10 @@ namespace GoApi.Tests.Integration
                 });
             _serviceProvider = appFactory.Services;
             TestClient = appFactory.CreateClient();
-            //using var serviceScope = _serviceProvider.CreateScope();
+            //using (var serviceScope = _serviceProvider.CreateScope())
+            //{
+            //    await Seed.SeedAsync(serviceScope);
+            //}
             //var appDbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
             //appDbContext.Database.OpenConnection();
             //appDbContext.Database.EnsureCreated();
@@ -77,6 +79,10 @@ namespace GoApi.Tests.Integration
 
         protected async Task<HttpResponseMessage> RegisterContractorAsync()
         {
+            using (var serviceScope = _serviceProvider.CreateScope())
+            {
+                await Seed.SeedAsync(serviceScope);
+            }
 
             var content = new RegisterContractorRequestDto
             {

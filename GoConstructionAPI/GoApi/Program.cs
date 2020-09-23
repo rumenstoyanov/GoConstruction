@@ -25,33 +25,34 @@ namespace GoApi
 
             using (var serviceScope = host.Services.CreateScope())
             {
-                // Get contexts
-                var appDbContext = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await Seed.SeedAsync(serviceScope);
+                //// Get contexts
+                //var appDbContext = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                // Migrate
-                await appDbContext.Database.MigrateAsync();
+                //// Migrate
+                //await appDbContext.Database.MigrateAsync();
 
-                // Seed roles if not present
-                var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                //// Seed roles if not present
+                //var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-                foreach (string role in new string[] { Admin, Contractor, Manager, Supervisor, Worker })
-                {
-                    if (!await roleManager.RoleExistsAsync(role))
-                    {
-                        var idRole = new IdentityRole(role);
-                        await roleManager.CreateAsync(idRole);
-                    }
-                }
+                //foreach (string role in new string[] { Admin, Contractor, Manager, Supervisor, Worker })
+                //{
+                //    if (!await roleManager.RoleExistsAsync(role))
+                //    {
+                //        var idRole = new IdentityRole(role);
+                //        await roleManager.CreateAsync(idRole);
+                //    }
+                //}
 
-                // Seed job statuses
-                if (!await appDbContext.JobStatuses.AnyAsync())
-                {
-                    foreach (string status in JobStatuses.StatusList)
-                    {
-                        appDbContext.Add(new JobStatus { Title = status });
-                    }
-                    await appDbContext.SaveChangesAsync();
-                } 
+                //// Seed job statuses
+                //if (!await appDbContext.JobStatuses.AnyAsync())
+                //{
+                //    foreach (string status in JobStatuses.StatusList)
+                //    {
+                //        appDbContext.Add(new JobStatus { Title = status });
+                //    }
+                //    await appDbContext.SaveChangesAsync();
+                //} 
             }
 
             // Run
