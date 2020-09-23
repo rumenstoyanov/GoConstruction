@@ -27,13 +27,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Text;
 using Newtonsoft.Json;
+using ThrowawayDb.Postgres;
+using GoApi.Data.Constants;
 
 namespace GoApi.Tests.Integration
 {
-    public class IntegrationTest
+    public class IntegrationTest: IDisposable
     {
         protected readonly HttpClient TestClient;
         private readonly IServiceProvider _serviceProvider;
+        private static ThrowawayDatabase _throwawayDatabase;
 
         // Subclasses can access this method, private would mean only this class.
         protected IntegrationTest()
@@ -41,18 +44,26 @@ namespace GoApi.Tests.Integration
             var appFactory = new WebApplicationFactory<Startup>()
                 .WithWebHostBuilder(builder =>
                 {
-
                     builder.ConfigureServices(services =>
                     {
 
-                        // Replace relational database with in memory transient database just for testing.
+                        // Remove the current db context - this is linked to the live database.
                         var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
                         if (descriptor != null)
                         {
                             services.Remove(descriptor);
                         }
-                        services.AddDbContext<AppDbContext>(options => { options.UseInMemoryDatabase("TestDb"); });
-                        //services.AddDbContext<AppDbContext>(options => options.UseSqlite("DataSource=:memory", x => { }));
+
+                        // Build an intermediate service provider so that we can resolve instances of services in this method.
+                        var intermediateProvider = services.BuildServiceProvider();
+
+                        // Get the live database credentials.
+                        var pgSqlSettings = intermediateProvider.GetService<PgSqlSettings>();
+
+                        // Construct a throwaway database with it.
+                        _throwawayDatabase = ThrowawayDatabase.Create();
+                        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(_throwawayDatabase.ConnectionString));
+
 
                     });
                 });
@@ -73,7 +84,7 @@ namespace GoApi.Tests.Integration
                 FullName = "Matthew Test",
                 Password = "usagafdgdzgdsgdsgsdgsdgdsf7",
                 ConfirmPassword = "usagafdgdzgdsgdsgsdgsdgdsf7",
-                OrganisationName = "Test Corp 1",
+                OrganisationName = "Test Corp X",
                 PhoneNumber = "07450022666",
                 Address = "TES123",
                 Industry = "Testing Work"
@@ -83,11 +94,11 @@ namespace GoApi.Tests.Integration
             return response;
         }
 
-        //public void Dispose()
-        //{
-        //    using var serviceScope = _serviceProvider.CreateScope();
-        //    var appDbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
-        //    appDbContext.Database.EnsureDeleted();
-        //}
+        public void Dispose()
+        {
+            _throwawayDatabase.Dispose();
+            //using var serviceScope = _serviceProvider.CreateScope();
+            //var appDbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
+        }
     }
 }

@@ -49,6 +49,8 @@ namespace GoApi
             Configuration.Bind("MailSettings", mailSettings);
             var redisSettings = new RedisSettings();
             Configuration.Bind("RedisSettings", redisSettings);
+            var pgSqlSettings = new PgSqlSettings();
+            Configuration.Bind("PgSqlSettings", pgSqlSettings);
 
             services.AddControllers().AddNewtonsoftJson(s => {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -56,6 +58,7 @@ namespace GoApi
             services.AddSingleton(jwtSettings);
             services.AddSingleton(mailSettings);
             services.AddSingleton(redisSettings);
+            services.AddSingleton(pgSqlSettings);
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<AppDbContext>()
