@@ -29,11 +29,14 @@ using System.Text;
 using Newtonsoft.Json;
 using ThrowawayDb.Postgres;
 using GoApi.Data.Constants;
+using Microsoft.Extensions.Configuration;
+using GoApi.Data.Models;
 
 namespace GoApi.Tests.Integration
 {
     public class IntegrationTest: IDisposable
     {
+        public IConfiguration Configuration { get; set; }
         protected readonly HttpClient TestClient;
         private readonly IServiceProvider _serviceProvider;
         private static ThrowawayDatabase _throwawayDatabase;
@@ -41,26 +44,46 @@ namespace GoApi.Tests.Integration
         // Subclasses can access this method, private would mean only this class.
         protected IntegrationTest()
         {
+            var builder = new ConfigurationBuilder().AddUserSecrets<IntegrationTest>();
+            Configuration = builder.Build();
             var appFactory = new WebApplicationFactory<Startup>()
                 .WithWebHostBuilder(builder =>
                 {
                     builder.ConfigureServices(services =>
                     {
                         // Build an intermediate service provider so that we can resolve instances of services in this method.
-                        var intermediateProvider = services.BuildServiceProvider();
-                        // Get the live database credentials.
-                        var pgSqlSettings = intermediateProvider.GetService<PgSqlSettings>();
+                        //var intermediateProvider = services.BuildServiceProvider();
+                        //using var intermediateScope = intermediateProvider.CreateScope();
+                        //// Get the live database credentials.
+                        //var pgSqlSettings = intermediateScope.ServiceProvider.GetService<PgSqlSettings>();
 
-                        // Remove the current db context - this is linked to the live database.
-                        var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-                        if (descriptor != null)
+                        // Try this replacement method - still need to access the PgSqlSettings somehow though, maybe just parse those manually here?
+                        //builder.UseSetting("","");
+
+                        // Solution is, if we can access Configuration
+                        // Remove all the singleton settings struct objects injected.
+                        // Rebind configuration to them
+                        // Mutate the IsEnabled
+                        // Inject them as singletons again.
+                        // They also left to be accessed in this body also e.g. in throwaway database.
+
+                        // Remove certain configurations in order to mutate and reinject.
+                        foreach (Type t in new Type[] { typeof(DbContextOptions<AppDbContext>), typeof(PgSqlSettings) })
                         {
-                            services.Remove(descriptor);
+                            var descriptor = services.SingleOrDefault(d => d.ServiceType == t);
+                            if (descriptor != null)
+                            {
+                                services.Remove(descriptor);
+                            }
                         }
+
+                        // Reinject the PgSqlSettings (no mutation, we just need the object) for the throwaway database.
+                        var pgSqlSettings = new PgSqlSettings();
+                        Configuration.Bind("PgSqlSettings", pgSqlSettings);
+                        services.AddSingleton(pgSqlSettings);
 
                         // Construct a throwaway database with it.
                         _throwawayDatabase = ThrowawayDatabase.Create(pgSqlSettings.Username, pgSqlSettings.Password, pgSqlSettings.Host);
-                        //_throwawayDatabase = ThrowawayDatabase.Create("postgres", "learncode", "localhost");
                         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(_throwawayDatabase.ConnectionString));
 
 
@@ -68,13 +91,6 @@ namespace GoApi.Tests.Integration
                 });
             _serviceProvider = appFactory.Services;
             TestClient = appFactory.CreateClient();
-            //using (var serviceScope = _serviceProvider.CreateScope())
-            //{
-            //    await Seed.SeedAsync(serviceScope);
-            //}
-            //var appDbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
-            //appDbContext.Database.OpenConnection();
-            //appDbContext.Database.EnsureCreated();
         }
 
         protected async Task<HttpResponseMessage> RegisterContractorAsync()
@@ -97,14 +113,13 @@ namespace GoApi.Tests.Integration
 
             };
             var response = await TestClient.PostAsync("api/auth/register/contractor", new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json"));
+
             return response;
         }
 
         public void Dispose()
         {
             _throwawayDatabase.Dispose();
-            //using var serviceScope = _serviceProvider.CreateScope();
-            //var appDbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
         }
     }
 }
