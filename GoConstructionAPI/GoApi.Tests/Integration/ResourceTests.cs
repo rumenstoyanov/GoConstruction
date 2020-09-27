@@ -19,6 +19,11 @@ namespace GoApi.Tests.Integration
 
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+        }
+
         [Fact]
         public async Task PostSitesAndGetSitesDetail_ReturnsCorrectData()
         {
@@ -78,6 +83,8 @@ namespace GoApi.Tests.Integration
             postResponse.StatusCode.Should().Be(expectedStatusCode);
 
         }
+
+
 
     }
 }

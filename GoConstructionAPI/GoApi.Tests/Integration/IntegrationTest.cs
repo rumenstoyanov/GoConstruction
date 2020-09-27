@@ -141,7 +141,7 @@ namespace GoApi.Tests.Integration
             TestClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, response.AccessToken);
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             _throwawayDatabase.Dispose();
         }

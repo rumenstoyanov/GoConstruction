@@ -20,6 +20,11 @@ namespace GoApi.Tests.Integration
 
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+        }
+
         [Fact]
         public async Task RegisterContractor_IsSuccessful()
         {
