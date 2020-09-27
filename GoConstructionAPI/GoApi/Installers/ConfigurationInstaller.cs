@@ -49,6 +49,7 @@ namespace GoApi.Installers
         public static void InstallServicesFromSettings(Settings settings, IServiceCollection services)
         {
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(settings.RedisSettings.ConnectionString));
+            //services.AddSingleton<ICacheService>(new RedisCacheService(services.BuildServiceProvider().GetRequiredService<IConnectionMultiplexer>(), services.BuildServiceProvider().GetRequiredService<RedisSettings>()));
             services.AddSingleton<ICacheService, RedisCacheService>();
         }
     }

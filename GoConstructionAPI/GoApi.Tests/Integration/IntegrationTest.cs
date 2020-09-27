@@ -23,6 +23,7 @@ using Xunit.Abstractions;
 using StackExchange.Redis;
 using GoApi.Services.Implementations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using GoApi.Services.Interfaces;
 
 namespace GoApi.Tests.Integration
 {
@@ -51,31 +52,34 @@ namespace GoApi.Tests.Integration
                     {
 
                         // Remove certain injected services (from the Startup.cs) in order to mutate and reinject.
-                        foreach (Type t in new Type[] { 
-                            typeof(DbContextOptions<AppDbContext>), 
+                        foreach (Type t in new Type[] {
+                            typeof(DbContextOptions<AppDbContext>),
                             typeof(PgSqlSettings),
                             typeof(RedisSettings),
                             typeof(MailSettings),
                             typeof(JwtSettings),
+                            typeof(IConnectionMultiplexer),
+                            typeof(ICacheService),
                             typeof(ConnectionMultiplexer),
                             typeof(RedisCacheService)
                         })
                         {
-                            var descriptor = services.SingleOrDefault(d => d.ServiceType == t);
-                            if (descriptor != null)
-                            {
-                                services.Remove(descriptor);
-                            }
+                            services.RemoveAll(t);
+                            //var descriptor = services.SingleOrDefault(d => d.ServiceType == t);
+                            //if (descriptor != null)
+                            //{
+                            //    services.Remove(descriptor);
+                            //}
                         }
 
                         // Reinject the settings with the new configuration (these mutations tested to work in .NET Core 3.1)
                         var settings = ConfigurationInstaller.BindSettings(Configuration, services, disableAll: true);
                         ConfigurationInstaller.InstallServicesFromSettings(settings, services);
                         _output.WriteLine(JsonConvert.SerializeObject(settings));
+
                         // Construct a throwaway database with it.
                         _throwawayDatabase = ThrowawayDatabase.Create(settings.PgSqlSettings.Username, settings.PgSqlSettings.Password, settings.PgSqlSettings.Host);
                         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(_throwawayDatabase.ConnectionString));
-
 
                     });
                 });
