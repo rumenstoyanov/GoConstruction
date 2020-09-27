@@ -10,6 +10,7 @@ namespace GoApi.Data.Constants
     /// </summary>
     public class MailSettings
     {
+        public bool IsEnabled { get; set; }
         public string SmtpServer { get; set; }
         public int Port { get; set; }
         public string SenderName { get; set; }

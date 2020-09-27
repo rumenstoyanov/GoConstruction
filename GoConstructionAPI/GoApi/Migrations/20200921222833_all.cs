@@ -237,6 +237,111 @@ namespace GoApi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Jobs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    Oid = table.Column<Guid>(nullable: false),
+                    IsActive = table.Column<bool>(nullable: false),
+                    SiteId = table.Column<Guid>(nullable: false),
+                    OwnerId = table.Column<string>(nullable: false),
+                    CreatedAt = table.Column<DateTime>(nullable: false),
+                    Title = table.Column<string>(maxLength: 250, nullable: false),
+                    Description = table.Column<string>(maxLength: 4000, nullable: true),
+                    FriendlyId = table.Column<string>(nullable: false),
+                    JobStatusId = table.Column<int>(nullable: false),
+                    DueDate = table.Column<DateTime>(nullable: false),
+                    ParentJobId = table.Column<Guid>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Jobs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Jobs_JobStatuses_JobStatusId",
+                        column: x => x.JobStatusId,
+                        principalTable: "JobStatuses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Jobs_Organisations_Oid",
+                        column: x => x.Oid,
+                        principalTable: "Organisations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Jobs_AspNetUsers_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Jobs_Jobs_ParentJobId",
+                        column: x => x.ParentJobId,
+                        principalTable: "Jobs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Jobs_Sites_SiteId",
+                        column: x => x.SiteId,
+                        principalTable: "Sites",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Assignments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    UserId = table.Column<string>(nullable: false),
+                    JobId = table.Column<Guid>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Assignments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Assignments_Jobs_JobId",
+                        column: x => x.JobId,
+                        principalTable: "Jobs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Assignments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    JobId = table.Column<Guid>(nullable: false),
+                    PostedByUserId = table.Column<string>(nullable: false),
+                    TimePosted = table.Column<DateTime>(nullable: false),
+                    Text = table.Column<string>(maxLength: 4000, nullable: false),
+                    UsersTagged = table.Column<List<string>>(type: "jsonb", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comments_Jobs_JobId",
+                        column: x => x.JobId,
+                        principalTable: "Jobs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Comments_AspNetUsers_PostedByUserId",
+                        column: x => x.PostedByUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -275,6 +380,51 @@ namespace GoApi.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Assignments_JobId",
+                table: "Assignments",
+                column: "JobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Assignments_UserId",
+                table: "Assignments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_JobId",
+                table: "Comments",
+                column: "JobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_PostedByUserId",
+                table: "Comments",
+                column: "PostedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Jobs_JobStatusId",
+                table: "Jobs",
+                column: "JobStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Jobs_Oid",
+                table: "Jobs",
+                column: "Oid");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Jobs_OwnerId",
+                table: "Jobs",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Jobs_ParentJobId",
+                table: "Jobs",
+                column: "ParentJobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Jobs_SiteId",
+                table: "Jobs",
+                column: "SiteId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sites_CreatedByUserId",
                 table: "Sites",
                 column: "CreatedByUserId");
@@ -308,16 +458,25 @@ namespace GoApi.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "JobStatuses");
+                name: "Assignments");
 
             migrationBuilder.DropTable(
-                name: "Sites");
+                name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "Updates");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Jobs");
+
+            migrationBuilder.DropTable(
+                name: "JobStatuses");
+
+            migrationBuilder.DropTable(
+                name: "Sites");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

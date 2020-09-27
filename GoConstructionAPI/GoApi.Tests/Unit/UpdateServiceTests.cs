@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using Xunit;
 using GoApi.Extensions;
 
-namespace GoApi.Tests
+namespace GoApi.Tests.Unit
 {
-    public class UpdateServiceTest
+    public class UpdateServiceTests
     {
         [Fact]
         public void Diff_ShouldIndicateCorrectUpdate()

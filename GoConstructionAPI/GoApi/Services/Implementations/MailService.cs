@@ -53,6 +53,11 @@ namespace GoApi.Services.Implementations
 
         public async Task SendMailAsync(string toName, string toAddress, string subject, string text)
         {
+            if (!_mailSettings.IsEnabled)
+            {
+                return;
+            }
+
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(_mailSettings.SenderName, _mailSettings.Email));
             message.To.Add(new MailboxAddress(toName, toAddress));
