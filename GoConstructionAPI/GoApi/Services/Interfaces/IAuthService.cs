@@ -29,6 +29,8 @@ namespace GoApi.Services.Interfaces
 
         Task<AuthInternalDto> RegisterNonContractorAsync(RegisterNonContractorRequestDto model, HttpRequest Request, ClaimsPrincipal User, IUrlHelper Url, string seniority);
 
+        bool IsJwtTokenValid(string accessToken);
+
         
     }
 }

@@ -89,6 +89,17 @@ namespace GoApi
 
                 options.SignIn.RequireConfirmedEmail = true;
             });
+
+            var tokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = settings.JwtSettings.Issuer,
+                ValidAudience = settings.JwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.JwtSettings.SigningKey))
+            };
+            services.AddSingleton(tokenValidationParameters);
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -99,15 +110,7 @@ namespace GoApi
                 {
                     options.SaveToken = true;
                     options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = settings.JwtSettings.Issuer,
-                        ValidAudience = settings.JwtSettings.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.JwtSettings.SigningKey))
-                    };
+                    options.TokenValidationParameters = tokenValidationParameters;
                 });
             services.AddAuthorization(options =>
             {

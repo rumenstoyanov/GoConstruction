@@ -30,12 +30,15 @@ namespace GoApi.Services.Implementations
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IBackgroundTaskQueue _queue;
+        private readonly TokenValidationParameters _tokenValidationParameters;
+
         public AuthService(
             JwtSettings jwtSettings, 
             UserManager<ApplicationUser> userManager, 
             AppDbContext appDbContext,
             IServiceScopeFactory serviceScopeFactory,
-            IBackgroundTaskQueue queue
+            IBackgroundTaskQueue queue,
+            TokenValidationParameters tokenValidationParameters,
             )
         {
             _jwtSettings = jwtSettings;
@@ -43,6 +46,7 @@ namespace GoApi.Services.Implementations
             _userManager = userManager;
             _serviceScopeFactory = serviceScopeFactory;
             _queue = queue;
+            _tokenValidationParameters = tokenValidationParameters;
         }
         public JwtSecurityToken GenerateJwtToken(Claim[] claims)
         {
@@ -87,6 +91,32 @@ namespace GoApi.Services.Implementations
         public async Task<IEnumerable<ApplicationUser>> GetValidUsersAsync(Guid oid)
         {
             return (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive && u.EmailConfirmed);
+        }
+
+        public bool IsJwtTokenValid(string accessToken)
+        {
+            try
+            {
+                var _ = new JwtSecurityTokenHandler().ValidateToken(accessToken, _tokenValidationParameters, out var validatedToken);
+                if (IsSecurityAlgorithmValid(validatedToken))
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool IsSecurityAlgorithmValid(SecurityToken validatedToken)
+        {
+            if ((validatedToken is JwtSecurityToken jwtSecurityToken) && jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+            return false;
         }
 
         public async Task<AuthInternalDto> RegisterNonContractorAsync(RegisterNonContractorRequestDto model, HttpRequest Request, ClaimsPrincipal User, IUrlHelper Url, string seniority)

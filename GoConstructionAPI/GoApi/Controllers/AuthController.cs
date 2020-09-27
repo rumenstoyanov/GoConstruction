@@ -153,6 +153,17 @@ namespace GoApi.Controllers
             return Unauthorized();
         }
 
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto model)
+        {
+            if (!_authService.IsJwtTokenValid(model.AccessToken))
+            {
+                return BadRequest();
+            }
+            throw new NotImplementedException();
+        }
+
         [HttpGet("confirmemail")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
