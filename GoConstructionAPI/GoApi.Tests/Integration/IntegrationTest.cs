@@ -31,6 +31,7 @@ using ThrowawayDb.Postgres;
 using GoApi.Data.Constants;
 using Microsoft.Extensions.Configuration;
 using GoApi.Data.Models;
+using Newtonsoft.Json.Serialization;
 
 namespace GoApi.Tests.Integration
 {
@@ -40,6 +41,7 @@ namespace GoApi.Tests.Integration
         protected readonly HttpClient TestClient;
         private readonly IServiceProvider _serviceProvider;
         private static ThrowawayDatabase _throwawayDatabase;
+        protected readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() } };
 
         // Subclasses can access this method, private would mean only this class.
         protected IntegrationTest()
@@ -114,6 +116,17 @@ namespace GoApi.Tests.Integration
             };
             var response = await TestClient.PostAsync("api/auth/register/contractor", new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json"));
 
+            return response;
+        }
+
+        protected async Task<HttpResponseMessage> AttemptAuthenticationContractorAsync()
+        {
+            var content = new LoginRequestDto
+            {
+                Email = "r90876@gmail.com",
+                Password = "usagafdgdzgdsgdsgsdgsdgdsf7"
+            };
+            var response = await TestClient.PostAsync("api/auth/login/", new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json"));
             return response;
         }
 

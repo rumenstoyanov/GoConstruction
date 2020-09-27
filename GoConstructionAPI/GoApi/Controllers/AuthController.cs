@@ -121,7 +121,7 @@ namespace GoApi.Controllers
                 }
                 if (!user.EmailConfirmed)
                 {
-                    return BadRequest(new List<IdentityError> { new IdentityError { Code = "EmailNotConfirmed", Description = "Please confirm your email address." } });
+                    return BadRequest(new List<IdentityError> { new IdentityError { Code = Messages.EmailNotConfirmedCode, Description = Messages.EmailNotConfirmedDescription } });
                 }
 
                 if (await _userManager.CheckPasswordAsync(user, model.Password))
