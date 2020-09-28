@@ -38,7 +38,7 @@ namespace GoApi.Services.Implementations
             AppDbContext appDbContext,
             IServiceScopeFactory serviceScopeFactory,
             IBackgroundTaskQueue queue,
-            TokenValidationParameters tokenValidationParameters,
+            TokenValidationParameters tokenValidationParameters
             )
         {
             _jwtSettings = jwtSettings;
@@ -93,20 +93,20 @@ namespace GoApi.Services.Implementations
             return (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive && u.EmailConfirmed);
         }
 
-        public bool IsJwtTokenValid(string accessToken)
+        public ClaimsPrincipal IsJwtTokenValid(string accessToken)
         {
             try
             {
-                var _ = new JwtSecurityTokenHandler().ValidateToken(accessToken, _tokenValidationParameters, out var validatedToken);
+                var claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(accessToken, _tokenValidationParameters, out var validatedToken);
                 if (IsSecurityAlgorithmValid(validatedToken))
                 {
-                    return true;
+                    return claimsPrincipal;
                 }
-                return false;
+                return null;
             }
             catch
             {
-                return false;
+                return null;
             }
         }
 

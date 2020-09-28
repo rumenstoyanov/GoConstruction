@@ -140,12 +140,25 @@ namespace GoApi.Controllers
 
                 };
 
-                    var token = _authService.GenerateJwtToken(claims);
+                    var accessToken = _authService.GenerateJwtToken(claims);
 
+                    var refreshToken = new RefreshToken
+                    {
+                        jti = accessToken.Id,
+                        CreationDate = DateTime.UtcNow,
+                        ExpiryDate = DateTime.UtcNow.AddMonths(6),
+                        IsUsed = false,
+                        IsInvalidated = false,
+                        UserId = user.Id
+                    };
+
+                    await _appDbContext.AddAsync(refreshToken);
+                    await _appDbContext.SaveChangesAsync();
                     return Ok(new LoginResponseDto
                     {
-                        AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
-                        Expiration = token.ValidTo
+                        AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
+                        Expiration = accessToken.ValidTo,
+                        RefreshToken = refreshToken.Token.ToString()
                     });
 
                 }
@@ -153,15 +166,68 @@ namespace GoApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// We allow refreshing of access tokens that have not yet expired.
+        /// Client middleware should redirect user to re-login for all response status codes other than 200.
+        /// </summary>
         [HttpPost("refresh")]
         [AllowAnonymous]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto model)
         {
-            if (!_authService.IsJwtTokenValid(model.AccessToken))
+            var claimsPrincipal = _authService.IsJwtTokenValid(model.AccessToken);
+            
+            if (claimsPrincipal == null)
             {
+                // Case of invalid (malformed) access token.
                 return BadRequest();
             }
-            throw new NotImplementedException();
+
+            // Claim that uniquely identifies a JWT token.
+            var jti = claimsPrincipal.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+
+            var storedRefreshToken = await _appDbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token.ToString() == model.RefreshToken);
+
+            if (storedRefreshToken == null)
+            {
+                // Case of invalid refresh token.
+                return BadRequest();
+            }
+
+            if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
+            {
+                // Case of expired refresh token.
+                return BadRequest();
+            }
+
+            if (storedRefreshToken.jti != jti)
+            {
+                // Case of refresh token and access token each belonging to a different user.
+                return BadRequest();
+            }
+
+            if (storedRefreshToken.IsInvalidated)
+            {
+                // Case of invalidated refresh token.
+                return BadRequest();
+            }
+
+            if (storedRefreshToken.IsUsed)
+            {
+                // Case of already used refresh token.
+                return BadRequest();
+            }
+
+            // Mark the refresh token as used at this stage.
+            storedRefreshToken.IsUsed = true;
+            await _appDbContext.SaveChangesAsync();
+
+            // NameIdentifier is the user id claim.
+            var user = await _userManager.FindByIdAsync(claimsPrincipal.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+
+
+
+
+
         }
 
         [HttpGet("confirmemail")]
