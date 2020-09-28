@@ -127,40 +127,6 @@ namespace GoApi.Controllers
                 if (await _userManager.CheckPasswordAsync(user, model.Password))
                 {
                     return Ok(await _authService.GenerateLoginResponse(user));
-                //    var userClaims = await _userManager.GetClaimsAsync(user);
-                //    var userRoles = await _userManager.GetRolesAsync(user);
-
-                //    var claims = new[]
-                //    {
-                //    new Claim(ClaimTypes.Name, user.UserName),
-                //    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                //    new Claim(userClaims.First().Type, userClaims.First().Value),
-                //    new Claim(Seniority.SeniorityClaimKey, userRoles.First()),
-                //    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                //    new Claim(Seniority.IsInitalSetClaimKey, user.IsInitialSet.ToString())
-
-                //};
-
-                //    var accessToken = _authService.GenerateJwtToken(claims);
-
-                //    var refreshToken = new RefreshToken
-                //    {
-                //        jti = accessToken.Id,
-                //        CreationDate = DateTime.UtcNow,
-                //        ExpiryDate = DateTime.UtcNow.AddMonths(6),
-                //        IsUsed = false,
-                //        IsInvalidated = false,
-                //        UserId = user.Id
-                //    };
-
-                //    await _appDbContext.AddAsync(refreshToken);
-                //    await _appDbContext.SaveChangesAsync();
-                //    return Ok(new LoginResponseDto
-                //    {
-                //        AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
-                //        Expiration = accessToken.ValidTo,
-                //        RefreshToken = refreshToken.Token.ToString()
-                //    });
 
                 }
             }
@@ -188,33 +154,14 @@ namespace GoApi.Controllers
 
             var storedRefreshToken = await _appDbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token.ToString() == model.RefreshToken);
 
-            if (storedRefreshToken == null)
+            if (
+                (storedRefreshToken == null) || // Case of invalid refresh token.
+                (DateTime.UtcNow > storedRefreshToken.ExpiryDate) || // Case of expired refresh token.
+                (storedRefreshToken.jti != jti) || // Case of refresh token and access token each belonging to a different user.
+                (storedRefreshToken.IsInvalidated) || // Case of invalidated refresh token.
+                (storedRefreshToken.IsUsed) // Case of already used refresh token.
+                )
             {
-                // Case of invalid refresh token.
-                return BadRequest();
-            }
-
-            if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
-            {
-                // Case of expired refresh token.
-                return BadRequest();
-            }
-
-            if (storedRefreshToken.jti != jti)
-            {
-                // Case of refresh token and access token each belonging to a different user.
-                return BadRequest();
-            }
-
-            if (storedRefreshToken.IsInvalidated)
-            {
-                // Case of invalidated refresh token.
-                return BadRequest();
-            }
-
-            if (storedRefreshToken.IsUsed)
-            {
-                // Case of already used refresh token.
                 return BadRequest();
             }
 
