@@ -201,5 +201,14 @@ namespace GoApi.Services.Implementations
                 RefreshToken = refreshToken.Token.ToString()
             };
         }
+
+        public async Task InvalidateAllUnusedRefreshTokens(ApplicationUser user)
+        {
+            foreach (var token in _appDbContext.RefreshTokens.ToList().Where(rt => rt.UserId.ToString() == user.Id && !rt.IsUsed))
+            {
+                token.IsInvalidated = true;
+            }
+            await _appDbContext.SaveChangesAsync();
+        }
     }
 }

@@ -31,6 +31,8 @@ namespace GoApi.Services.Interfaces
 
         Task<LoginResponseDto> GenerateLoginResponse(ApplicationUser user);
 
+        Task InvalidateAllUnusedRefreshTokens(ApplicationUser user);
+
         
     }
 }

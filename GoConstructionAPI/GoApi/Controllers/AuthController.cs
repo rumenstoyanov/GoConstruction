@@ -127,7 +127,6 @@ namespace GoApi.Controllers
                 if (await _userManager.CheckPasswordAsync(user, model.Password))
                 {
                     return Ok(await _authService.GenerateLoginResponse(user));
-
                 }
             }
             return Unauthorized();
@@ -222,6 +221,7 @@ namespace GoApi.Controllers
                 user.PhoneNumber = model.PhoneNumber;
                 await _appDbContext.SaveChangesAsync();
                 await _resourceService.FlushCacheForNewUserAsync(Request, Url, _authService.GetRequestOid(Request));
+                await _authService.InvalidateAllUnusedRefreshTokens(user);
                 return Ok();
             }
             else
@@ -247,6 +247,7 @@ namespace GoApi.Controllers
 
             if (result.Succeeded)
             {
+                await _authService.InvalidateAllUnusedRefreshTokens(user);
                 return Ok();
             }
             else
@@ -323,6 +324,7 @@ namespace GoApi.Controllers
                 {
                     user.IsInitialSet = false;
                     await _appDbContext.SaveChangesAsync();
+                    await _authService.InvalidateAllUnusedRefreshTokens(user);
 
                     _queue.QueueBackgroundWorkItem(async token =>
                     {
