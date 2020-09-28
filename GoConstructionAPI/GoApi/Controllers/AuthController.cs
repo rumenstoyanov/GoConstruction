@@ -126,40 +126,41 @@ namespace GoApi.Controllers
 
                 if (await _userManager.CheckPasswordAsync(user, model.Password))
                 {
-                    var userClaims = await _userManager.GetClaimsAsync(user);
-                    var userRoles = await _userManager.GetRolesAsync(user);
+                    return Ok(await _authService.GenerateLoginResponse(user));
+                //    var userClaims = await _userManager.GetClaimsAsync(user);
+                //    var userRoles = await _userManager.GetRolesAsync(user);
 
-                    var claims = new[]
-                    {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(userClaims.First().Type, userClaims.First().Value),
-                    new Claim(Seniority.SeniorityClaimKey, userRoles.First()),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(Seniority.IsInitalSetClaimKey, user.IsInitialSet.ToString())
+                //    var claims = new[]
+                //    {
+                //    new Claim(ClaimTypes.Name, user.UserName),
+                //    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                //    new Claim(userClaims.First().Type, userClaims.First().Value),
+                //    new Claim(Seniority.SeniorityClaimKey, userRoles.First()),
+                //    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                //    new Claim(Seniority.IsInitalSetClaimKey, user.IsInitialSet.ToString())
 
-                };
+                //};
 
-                    var accessToken = _authService.GenerateJwtToken(claims);
+                //    var accessToken = _authService.GenerateJwtToken(claims);
 
-                    var refreshToken = new RefreshToken
-                    {
-                        jti = accessToken.Id,
-                        CreationDate = DateTime.UtcNow,
-                        ExpiryDate = DateTime.UtcNow.AddMonths(6),
-                        IsUsed = false,
-                        IsInvalidated = false,
-                        UserId = user.Id
-                    };
+                //    var refreshToken = new RefreshToken
+                //    {
+                //        jti = accessToken.Id,
+                //        CreationDate = DateTime.UtcNow,
+                //        ExpiryDate = DateTime.UtcNow.AddMonths(6),
+                //        IsUsed = false,
+                //        IsInvalidated = false,
+                //        UserId = user.Id
+                //    };
 
-                    await _appDbContext.AddAsync(refreshToken);
-                    await _appDbContext.SaveChangesAsync();
-                    return Ok(new LoginResponseDto
-                    {
-                        AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
-                        Expiration = accessToken.ValidTo,
-                        RefreshToken = refreshToken.Token.ToString()
-                    });
+                //    await _appDbContext.AddAsync(refreshToken);
+                //    await _appDbContext.SaveChangesAsync();
+                //    return Ok(new LoginResponseDto
+                //    {
+                //        AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
+                //        Expiration = accessToken.ValidTo,
+                //        RefreshToken = refreshToken.Token.ToString()
+                //    });
 
                 }
             }
@@ -224,7 +225,7 @@ namespace GoApi.Controllers
             // NameIdentifier is the user id claim.
             var user = await _userManager.FindByIdAsync(claimsPrincipal.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
-
+            return Ok(await _authService.GenerateLoginResponse(user));
 
 
 

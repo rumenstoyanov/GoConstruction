@@ -21,8 +21,6 @@ namespace GoApi.Services.Interfaces
         /// Valid users are those with IsActive = True and EmailConfirmed = True. Those with IsInitialSet = False are still included in the list because
         /// this means they have verified email (if initial signup) or are in the process of a password reset - so still want to see them.
         /// </summary>
-        /// <param name="oid"></param>
-        /// <returns></returns>
         Task<IEnumerable<ApplicationUser>> GetValidUsersAsync(Guid oid);
 
         string GeneratePassword();
@@ -31,7 +29,7 @@ namespace GoApi.Services.Interfaces
 
         ClaimsPrincipal IsJwtTokenValid(string accessToken);
 
-        //LoginResponseDto GenerateLoginResponse(ApplicationUser user);
+        Task<LoginResponseDto> GenerateLoginResponse(ApplicationUser user);
 
         
     }
