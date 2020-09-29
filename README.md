@@ -1,6 +1,6 @@
 # GoConstruction
 ## API
-**Deployed for demos**: https://goapi-demo.azurewebsites.net/
+**Demo deployment**: https://goapi-demo.azurewebsites.net/
 ### Overview
 
 GoAPI is the back-end for a hypothetical issue (ticket) tracking software application. Context is the construction industry. Key features are:
