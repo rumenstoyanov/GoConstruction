@@ -29,6 +29,7 @@ using Newtonsoft.Json.Serialization;
 using StackExchange.Redis;
 using System.Threading;
 using GoApi.Installers;
+using System.Net;
 
 namespace GoApi
 {
@@ -173,7 +174,7 @@ namespace GoApi
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "MVP API");
             });
 
             app.UseRouting();
@@ -184,6 +185,18 @@ namespace GoApi
             {
                 endpoints.MapControllers();
             });
+
+            app.UseStatusCodePages(async context =>
+            {
+                var response = context.HttpContext.Response;
+
+                if (response.StatusCode == (int)HttpStatusCode.NotFound)
+                {
+                    response.Redirect("/swagger/");
+                }
+
+            });
+
             ThreadPool.SetMinThreads(4000, 100); // Set the Redis worker and IOCP threads minimums.
         }
     }
