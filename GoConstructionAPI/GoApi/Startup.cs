@@ -44,28 +44,15 @@ namespace GoApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //var jwtSettings = new JwtSettings();
-            //Configuration.Bind("JwtSettings", jwtSettings);
-            //var mailSettings = new MailSettings();
-            //Configuration.Bind("MailSettings", mailSettings);
-            //var redisSettings = new RedisSettings();
-            //Configuration.Bind("RedisSettings", redisSettings);
-            //var pgSqlSettings = new PgSqlSettings();
-            //Configuration.Bind("PgSqlSettings", pgSqlSettings);
 
             services.AddControllers().AddNewtonsoftJson(s => {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
-            //services.AddSingleton(jwtSettings);
-            //services.AddSingleton(mailSettings);
-            //services.AddSingleton(redisSettings);
-            //services.AddSingleton(pgSqlSettings);
             var settings = ConfigurationInstaller.BindSettings(Configuration, services);
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PgDbMain")));
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<AppDbContext>()
                     .AddDefaultTokenProviders();
-            //services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddAutoMapper(typeof(Startup));
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IMailService, MailService>();
@@ -73,8 +60,6 @@ namespace GoApi
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddScoped<IUpdateService, UpdateService>();
             services.AddScoped<IResourceService, ResourceService>();
-            //services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(settings.RedisSettings.ConnectionString));
-            //services.AddSingleton<ICacheService, RedisCacheService>();
             ConfigurationInstaller.InstallServicesFromSettings(settings, services);
             services.Configure<IdentityOptions>(options =>
             {
@@ -89,6 +74,17 @@ namespace GoApi
 
                 options.SignIn.RequireConfirmedEmail = true;
             });
+
+            var tokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = settings.JwtSettings.Issuer,
+                ValidAudience = settings.JwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.JwtSettings.SigningKey))
+            };
+            services.AddSingleton(tokenValidationParameters);
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -99,15 +95,7 @@ namespace GoApi
                 {
                     options.SaveToken = true;
                     options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = settings.JwtSettings.Issuer,
-                        ValidAudience = settings.JwtSettings.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.JwtSettings.SigningKey))
-                    };
+                    options.TokenValidationParameters = tokenValidationParameters;
                 });
             services.AddAuthorization(options =>
             {

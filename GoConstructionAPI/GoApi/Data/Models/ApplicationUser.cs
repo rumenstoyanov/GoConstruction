@@ -23,5 +23,6 @@ namespace GoApi.Data.Models
         public List<Job> Jobs { get; set; }
         public List<UserJob> Assignments { get; set; }
         public List<Comment> Comments { get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; }
     }
 }

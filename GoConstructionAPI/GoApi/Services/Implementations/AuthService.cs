@@ -30,12 +30,15 @@ namespace GoApi.Services.Implementations
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IBackgroundTaskQueue _queue;
+        private readonly TokenValidationParameters _tokenValidationParameters;
+
         public AuthService(
             JwtSettings jwtSettings, 
             UserManager<ApplicationUser> userManager, 
             AppDbContext appDbContext,
             IServiceScopeFactory serviceScopeFactory,
-            IBackgroundTaskQueue queue
+            IBackgroundTaskQueue queue,
+            TokenValidationParameters tokenValidationParameters
             )
         {
             _jwtSettings = jwtSettings;
@@ -43,6 +46,7 @@ namespace GoApi.Services.Implementations
             _userManager = userManager;
             _serviceScopeFactory = serviceScopeFactory;
             _queue = queue;
+            _tokenValidationParameters = tokenValidationParameters;
         }
         public JwtSecurityToken GenerateJwtToken(Claim[] claims)
         {
@@ -89,6 +93,32 @@ namespace GoApi.Services.Implementations
             return (await _userManager.GetUsersForClaimAsync(new Claim(Seniority.OrganisationIdClaimKey, oid.ToString()))).Where(u => u.IsActive && u.EmailConfirmed);
         }
 
+        public ClaimsPrincipal IsJwtTokenValid(string accessToken)
+        {
+            try
+            {
+                var claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(accessToken, _tokenValidationParameters, out var validatedToken);
+                if (IsSecurityAlgorithmValid(validatedToken))
+                {
+                    return claimsPrincipal;
+                }
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private bool IsSecurityAlgorithmValid(SecurityToken validatedToken)
+        {
+            if ((validatedToken is JwtSecurityToken jwtSecurityToken) && jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public async Task<AuthInternalDto> RegisterNonContractorAsync(RegisterNonContractorRequestDto model, HttpRequest Request, ClaimsPrincipal User, IUrlHelper Url, string seniority)
         {
             var oid = GetRequestOid(Request);
@@ -131,6 +161,54 @@ namespace GoApi.Services.Implementations
             {
                 return new AuthInternalDto { Success = false, Errors = result.Errors.ToList() };
             }
+        }
+
+        public async Task<LoginResponseDto> GenerateLoginResponse(ApplicationUser user)
+        {
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var claims = new[]
+            {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(userClaims.First().Type, userClaims.First().Value),
+                    new Claim(Seniority.SeniorityClaimKey, userRoles.First()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(Seniority.IsInitalSetClaimKey, user.IsInitialSet.ToString())
+
+                };
+
+            var accessToken = GenerateJwtToken(claims);
+
+            var refreshToken = new RefreshToken
+            {
+                jti = accessToken.Id,
+                CreationDate = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddMonths(6),
+                IsUsed = false,
+                IsInvalidated = false,
+                UserId = user.Id
+            };
+
+            await _appDbContext.AddAsync(refreshToken);
+            await _appDbContext.SaveChangesAsync();
+
+            return new LoginResponseDto
+            {
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
+                Expiration = accessToken.ValidTo,
+                RefreshToken = refreshToken.Token.ToString()
+            };
+        }
+
+        public async Task InvalidateAllUnusedRefreshTokens(ApplicationUser user)
+        {
+            foreach (var token in _appDbContext.RefreshTokens.ToList().Where(rt => rt.UserId.ToString() == user.Id && !rt.IsUsed))
+            {
+                token.IsInvalidated = true;
+            }
+            await _appDbContext.SaveChangesAsync();
         }
     }
 }

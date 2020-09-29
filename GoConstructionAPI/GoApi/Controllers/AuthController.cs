@@ -126,31 +126,55 @@ namespace GoApi.Controllers
 
                 if (await _userManager.CheckPasswordAsync(user, model.Password))
                 {
-                    var userClaims = await _userManager.GetClaimsAsync(user);
-                    var userRoles = await _userManager.GetRolesAsync(user);
-
-                    var claims = new[]
-                    {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(userClaims.First().Type, userClaims.First().Value),
-                    new Claim(Seniority.SeniorityClaimKey, userRoles.First()),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(Seniority.IsInitalSetClaimKey, user.IsInitialSet.ToString())
-
-                };
-
-                    var token = _authService.GenerateJwtToken(claims);
-
-                    return Ok(new LoginResponseDto
-                    {
-                        AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
-                        Expiration = token.ValidTo
-                    });
-
+                    return Ok(await _authService.GenerateLoginResponse(user));
                 }
             }
             return Unauthorized();
+        }
+
+        /// <summary>
+        /// We allow refreshing of access tokens that have not yet expired.
+        /// Client middleware should redirect user to re-login for all response status codes other than 200.
+        /// </summary>
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto model)
+        {
+            var claimsPrincipal = _authService.IsJwtTokenValid(model.AccessToken);
+            
+            if (claimsPrincipal == null)
+            {
+                // Case of invalid (malformed) access token.
+                return BadRequest();
+            }
+
+            // Claim that uniquely identifies a JWT token.
+            var jti = claimsPrincipal.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+
+            var storedRefreshToken = await _appDbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token.ToString() == model.RefreshToken);
+
+            if (
+                (storedRefreshToken == null) || // Case of invalid refresh token.
+                (DateTime.UtcNow > storedRefreshToken.ExpiryDate) || // Case of expired refresh token.
+                (storedRefreshToken.jti != jti) || // Case of refresh token and access token each belonging to a different user.
+                (storedRefreshToken.IsInvalidated) || // Case of invalidated refresh token.
+                (storedRefreshToken.IsUsed) // Case of already used refresh token.
+                )
+            {
+                return BadRequest();
+            }
+
+            // Mark the refresh token as used at this stage.
+            storedRefreshToken.IsUsed = true;
+            await _appDbContext.SaveChangesAsync();
+
+            // NameIdentifier is the user id claim.
+            var user = await _userManager.FindByIdAsync(claimsPrincipal.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+
+            return Ok(await _authService.GenerateLoginResponse(user));
+
+
+
         }
 
         [HttpGet("confirmemail")]
@@ -197,6 +221,7 @@ namespace GoApi.Controllers
                 user.PhoneNumber = model.PhoneNumber;
                 await _appDbContext.SaveChangesAsync();
                 await _resourceService.FlushCacheForNewUserAsync(Request, Url, _authService.GetRequestOid(Request));
+                await _authService.InvalidateAllUnusedRefreshTokens(user);
                 return Ok();
             }
             else
@@ -222,6 +247,7 @@ namespace GoApi.Controllers
 
             if (result.Succeeded)
             {
+                await _authService.InvalidateAllUnusedRefreshTokens(user);
                 return Ok();
             }
             else
@@ -298,6 +324,7 @@ namespace GoApi.Controllers
                 {
                     user.IsInitialSet = false;
                     await _appDbContext.SaveChangesAsync();
+                    await _authService.InvalidateAllUnusedRefreshTokens(user);
 
                     _queue.QueueBackgroundWorkItem(async token =>
                     {
