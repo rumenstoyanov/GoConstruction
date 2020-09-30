@@ -29,6 +29,40 @@ namespace GoApi.Tests.Unit
         }
 
         [Fact]
+        public void Diff_ShouldIndicateCorrectUpdatePreFieldNull()
+        {
+            // Arrange
+            var preUpdate = new SiteUpdateRequestDto { Title = null, Description = "TestDescription", EndDate = new DateTime(2020, 1, 1) };
+            var postUpdate = new SiteUpdateRequestDto { Title = "ReTestTitle", Description = "TestDescription", EndDate = new DateTime(2020, 1, 1) };
+
+            // Act
+            var updateService = new UpdateService(null, null, null);
+            var actualDiffDict = updateService.Diff(preUpdate, postUpdate);
+
+            // Assert
+            Assert.Single(actualDiffDict);
+            Assert.Contains("Title", actualDiffDict.Keys);
+            Assert.Equal("ReTestTitle", actualDiffDict["Title"]);
+        }
+
+        [Fact]
+        public void Diff_ShouldIndicateCorrectUpdatePostFieldNull()
+        {
+            // Arrange
+            var preUpdate = new SiteUpdateRequestDto { Title = "TestTitle", Description = "TestDescription", EndDate = new DateTime(2020, 1, 1) };
+            var postUpdate = new SiteUpdateRequestDto { Title = null, Description = "TestDescription", EndDate = new DateTime(2020, 1, 1) };
+
+            // Act
+            var updateService = new UpdateService(null, null, null);
+            var actualDiffDict = updateService.Diff(preUpdate, postUpdate);
+
+            // Assert
+            Assert.Single(actualDiffDict);
+            Assert.Contains("Title", actualDiffDict.Keys);
+            Assert.Equal(string.Empty, actualDiffDict["Title"]);
+        }
+
+        [Fact]
         public void Diff_ShouldBeEmptyIfEqual()
         {
             // Arrange
@@ -42,6 +76,21 @@ namespace GoApi.Tests.Unit
             // Assert
             Assert.Empty(actualDiffDict);
 
+        }
+
+        [Fact]
+        public void Diff_ShouldBeEmptyIfEqualSomeFieldsNull()
+        {
+            // Arrange
+            var preUpdate = new SiteUpdateRequestDto { Title = null, Description = "TestDescription", EndDate = new DateTime(2020, 1, 1) };
+            var postUpdate = new SiteUpdateRequestDto { Title = null, Description = "TestDescription", EndDate = new DateTime(2020, 1, 1) };
+
+            // Act
+            var updateService = new UpdateService(null, null, null);
+            var actualDiffDict = updateService.Diff(preUpdate, postUpdate);
+
+            // Assert
+            Assert.Empty(actualDiffDict);
         }
 
         [Fact]

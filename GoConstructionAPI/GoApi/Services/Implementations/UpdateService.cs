@@ -75,10 +75,26 @@ namespace GoApi.Services.Implementations
             var properties = typeof(T).GetProperties();
             foreach (var pi in properties)
             {
-                if (pi.GetValue(preUpdate).ToString() != pi.GetValue(postUpdate).ToString())
+                var pre = pi.GetValue(preUpdate);
+                var post = pi.GetValue(postUpdate);
+
+                if (pre != null && post != null)
                 {
-                    diffDict.Add(pi.Name, pi.GetValue(postUpdate).ToString());
+                    if (pre.ToString() != post.ToString())
+                    {
+                        diffDict.Add(pi.Name, post.ToString());
+                    }
                 }
+                else if (pre == null && post != null)
+                {
+                    diffDict.Add(pi.Name, post.ToString());
+                }
+
+                else if (pre != null && post == null)
+                {
+                    diffDict.Add(pi.Name, string.Empty);
+                }
+
             }
             return diffDict;
 

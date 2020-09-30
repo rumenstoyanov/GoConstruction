@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using GoApi.Profiles;
 
 namespace GoApi.Installers
 {
@@ -44,6 +46,21 @@ namespace GoApi.Installers
                 MailSettings = mailSettings
             };
 
+        }
+
+        public static MapperConfiguration AssembleMapperConfiguration()
+        {
+            var config = new MapperConfiguration(cfg => {
+                cfg.AddProfile(new ApplicationUserProfile());
+                cfg.AddProfile(new CommentProfile());
+                cfg.AddProfile(new JobProfile());
+                cfg.AddProfile(new JobStatusProfile());
+                cfg.AddProfile(new OrganisationProfile());
+                cfg.AddProfile(new SiteProfile());
+                cfg.AddProfile(new UpdateProfile());
+            });
+
+            return config;
         }
 
         public static void InstallServicesFromSettings(Settings settings, IServiceCollection services)

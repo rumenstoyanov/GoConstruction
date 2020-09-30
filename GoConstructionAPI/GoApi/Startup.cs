@@ -54,7 +54,7 @@ namespace GoApi
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<AppDbContext>()
                     .AddDefaultTokenProviders();
-            services.AddAutoMapper(typeof(Startup));
+            services.AddSingleton(ConfigurationInstaller.AssembleMapperConfiguration().CreateMapper());
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IMailService, MailService>();
             services.AddHostedService<QueuedHostedService>();
