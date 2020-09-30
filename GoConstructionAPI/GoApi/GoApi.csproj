@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Data\AppDbContext.cs" />
     <Compile Remove="Data\AuthInternalDto.cs" />
     <Compile Remove="Data\JobUpdateInternalDto.cs" />
   </ItemGroup>

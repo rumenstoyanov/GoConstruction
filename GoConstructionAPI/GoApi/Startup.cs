@@ -30,6 +30,7 @@ using GoApi.Installers;
 using System.Net;
 using GoLibrary.Data.Models;
 using GoLibrary.Data;
+using GoApi.Data;
 
 namespace GoApi
 {
