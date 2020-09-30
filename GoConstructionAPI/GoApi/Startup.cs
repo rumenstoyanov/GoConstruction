@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using GoApi.Data;
 using GoApi.Data.Constants;
-using GoApi.Data.Models;
 using GoApi.Services.Implementations;
 using GoApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,6 +28,8 @@ using StackExchange.Redis;
 using System.Threading;
 using GoApi.Installers;
 using System.Net;
+using GoLibrary.Data.Models;
+using GoLibrary.Data;
 
 namespace GoApi
 {

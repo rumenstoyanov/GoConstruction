@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using GoApi.Data.Dtos;
-using GoApi.Data.Models;
+using GoLibrary.Data.Models;
+using GoLibrary.Data.Dtos;
 
 namespace GoApi.Profiles
 {

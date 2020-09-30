@@ -1,5 +1,6 @@
 ﻿using GoApi.Data.Constants;
-using GoApi.Data.Models;
+using GoLibrary.Data.Models;
+using GoLibrary.Data;
 using GoApi.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -14,12 +15,13 @@ using System.Threading.Tasks;
 using System.Security;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
-using GoApi.Data.Dtos;
+using GoLibrary.Data.Dtos;
 using System.Security.Policy;
 using GoApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using GoApi.Controllers;
+using GoApi.Data.Dtos;
 
 namespace GoApi.Services.Implementations
 {

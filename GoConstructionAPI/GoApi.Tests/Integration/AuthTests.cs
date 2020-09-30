@@ -8,7 +8,7 @@ using Xunit;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Identity;
 using GoApi.Data.Constants;
-using GoApi.Data.Dtos;
+using GoLibrary.Data.Dtos;
 using Xunit.Abstractions;
 
 namespace GoApi.Tests.Integration

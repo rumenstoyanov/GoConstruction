@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
-using GoApi.Data.Dtos;
-using GoApi.Data.Models;
+using GoLibrary.Data.Dtos;
+using GoLibrary.Data.Models;
 using GoApi.Services.Implementations;
 using System;
 using System.Collections.Generic;

@@ -1,5 +1,5 @@
-﻿using GoApi.Data.Dtos;
-using GoApi.Data.Models;
+﻿using GoLibrary.Data.Dtos;
+using GoLibrary.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using GoApi.Data.Dtos;
 
 namespace GoApi.Services.Interfaces
 {

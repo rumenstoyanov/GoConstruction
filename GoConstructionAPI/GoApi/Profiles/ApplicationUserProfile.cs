@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GoApi.Data.Dtos;
-using GoApi.Data.Models;
+using GoLibrary.Data.Models;
+using GoLibrary.Data.Dtos;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;

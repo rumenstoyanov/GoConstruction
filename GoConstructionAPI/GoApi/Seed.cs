@@ -1,6 +1,7 @@
 ﻿using GoApi.Data;
 using GoApi.Data.Constants;
-using GoApi.Data.Models;
+using GoLibrary.Data.Models;
+using GoLibrary.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

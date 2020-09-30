@@ -1,5 +1,5 @@
 ﻿using GoApi.Data.Constants;
-using GoApi.Data.Models;
+using GoLibrary.Data.Models;
 using GoApi.Services.Interfaces;
 using MailKit.Net.Smtp;
 using MimeKit;

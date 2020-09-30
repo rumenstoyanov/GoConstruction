@@ -16,7 +16,8 @@ using Newtonsoft.Json;
 using ThrowawayDb.Postgres;
 using GoApi.Data.Constants;
 using Microsoft.Extensions.Configuration;
-using GoApi.Data.Models;
+using GoLibrary.Data.Models;
+using GoLibrary.Data.Dtos;
 using Newtonsoft.Json.Serialization;
 using GoApi.Installers;
 using Xunit.Abstractions;
@@ -24,6 +25,7 @@ using StackExchange.Redis;
 using GoApi.Services.Implementations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using GoApi.Services.Interfaces;
+using GoLibrary.Data;
 
 namespace GoApi.Tests.Integration
 {

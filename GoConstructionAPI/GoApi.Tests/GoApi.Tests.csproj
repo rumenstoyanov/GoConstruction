@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GoApi\GoApi.csproj" />
+    <ProjectReference Include="..\GoLibrary\GoLibrary.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using GoApi.Data.Dtos;
+using GoLibrary.Data.Dtos;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
