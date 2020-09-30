@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using GoApi.Profiles;
+using Microsoft.Azure.ServiceBus;
 
 namespace GoApi.Installers
 {
@@ -25,6 +26,8 @@ namespace GoApi.Installers
             configuration.Bind("RedisSettings", redisSettings);
             var pgSqlSettings = new PgSqlSettings();
             configuration.Bind("PgSqlSettings", pgSqlSettings);
+            var serviceBusSettings = new ServiceBusSettings();
+            configuration.Bind("ServiceBus", serviceBusSettings);
 
             if (disableAll)
             {
@@ -37,13 +40,15 @@ namespace GoApi.Installers
             services.AddSingleton(mailSettings);
             services.AddSingleton(redisSettings);
             services.AddSingleton(pgSqlSettings);
+            services.AddSingleton(serviceBusSettings);
 
             return new Settings
             {
                 JwtSettings = jwtSettings,
                 PgSqlSettings = pgSqlSettings,
                 RedisSettings = redisSettings,
-                MailSettings = mailSettings
+                MailSettings = mailSettings,
+                ServiceBusSettings = serviceBusSettings
             };
 
         }
@@ -67,6 +72,8 @@ namespace GoApi.Installers
         {
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(settings.RedisSettings.ConnectionString));
             services.AddSingleton<ICacheService, RedisCacheService>();
+            services.AddSingleton<IQueueClient>(_ => new QueueClient(settings.ServiceBusSettings.ConnectionString, settings.ServiceBusSettings.QueueName));
+            services.AddSingleton<IMessagePublisher, MessagePublisher>();
         }
     }
 }

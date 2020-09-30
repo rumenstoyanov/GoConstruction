@@ -11,5 +11,6 @@ namespace GoApi.Data.Constants
         public JwtSettings JwtSettings { get; set; }
         public RedisSettings RedisSettings { get; set; }
         public MailSettings MailSettings { get; set; }
+        public ServiceBusSettings ServiceBusSettings { get; set; }
     }
 }
