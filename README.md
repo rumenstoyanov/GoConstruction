@@ -25,6 +25,7 @@ Also use:
 - InMemory DB for testing
 
 ### Architecture
+No front end clients have been created; this appears on the diagram just for completeness. Everything else is made.
 ![alt text](images/architecture-diagram.png)
 
 ### Improvements
