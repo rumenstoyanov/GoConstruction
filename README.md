@@ -1,6 +1,6 @@
 # GoConstruction
 ## API
-**Demo deployment**: https://goapi-demo.azurewebsites.net/
+**Demo deployment**: https://goapi-demo.azurewebsites.net/ (just to display docs, cache and email disabled).
 ### Architecture
 No front end clients have been created; this appears on the diagram just for completeness. Everything else is made.
 ![alt text](images/architecture-diagram.png)
