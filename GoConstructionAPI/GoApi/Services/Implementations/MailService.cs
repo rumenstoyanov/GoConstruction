@@ -1,5 +1,6 @@
 ﻿using GoApi.Data.Constants;
 using GoLibrary.Data.Models;
+using GoLibrary.Data.Internals;
 using GoApi.Services.Interfaces;
 using MailKit.Net.Smtp;
 using MimeKit;
@@ -14,9 +15,11 @@ namespace GoApi.Services.Implementations
     public class MailService : IMailService
     {
         private readonly MailSettings _mailSettings;
-        public MailService(MailSettings mailSettings)
+        private readonly IMessagePublisher _messagePublisher;
+        public MailService(MailSettings mailSettings, IMessagePublisher messagePublisher)
         {
             _mailSettings = mailSettings;
+            _messagePublisher = messagePublisher;
         }
 
         public Dictionary<string, string> GetNameAddressPairs(IEnumerable<ApplicationUser> recepients)
@@ -58,26 +61,29 @@ namespace GoApi.Services.Implementations
                 return;
             }
 
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(_mailSettings.SenderName, _mailSettings.Email));
-            message.To.Add(new MailboxAddress(toName, toAddress));
-            message.Subject = subject;
-            message.Body = new TextPart("plain")
-            {
-                Text = text
-            };
+            var email = new EmailMessageDto { ToName = toName, ToAddress = toAddress, Subject = subject, Text = text };
+            await _messagePublisher.Publish(email);
 
-            using (var client = new SmtpClient())
-            {
-                await client.ConnectAsync(_mailSettings.SmtpServer, _mailSettings.Port);
+            //var message = new MimeMessage();
+            //message.From.Add(new MailboxAddress(_mailSettings.SenderName, _mailSettings.Email));
+            //message.To.Add(new MailboxAddress(toName, toAddress));
+            //message.Subject = subject;
+            //message.Body = new TextPart("plain")
+            //{
+            //    Text = text
+            //};
 
-                client.AuthenticationMechanisms.Remove("XOAUTH2");
+            //using (var client = new SmtpClient())
+            //{
+            //    await client.ConnectAsync(_mailSettings.SmtpServer, _mailSettings.Port);
 
-                await client.AuthenticateAsync(_mailSettings.Email, _mailSettings.Password);
+            //    client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
-            }
+            //    await client.AuthenticateAsync(_mailSettings.Email, _mailSettings.Password);
+
+            //    await client.SendAsync(message);
+            //    await client.DisconnectAsync(true);
+            //}
         }
 
         public async Task SendMailAsync(Dictionary<string, string> emailNamePairs, string subject, string text)
