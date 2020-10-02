@@ -1,8 +1,10 @@
 # GoConstruction
 ## API
 **Demo deployment**: https://goapi-demo.azurewebsites.net/
+### Architecture
+No front end clients have been created; this appears on the diagram just for completeness. Everything else is made.
+![alt text](images/architecture-diagram.png)
 ### Overview
-
 GoAPI is the back-end for a hypothetical issue (ticket) tracking software application. Context is the construction industry. Key features are:
 
 - Organisations can sign up and register users at 4 different levels of authority (Worker, Supervisor, Manager, Contractor), each one having different permissions for CRUD operations in various parts of the application.
@@ -20,19 +22,14 @@ The API is an ASP.NET Core WebAPI project:
 - EF Core ORM;
 - Swagger for docs;
 - Service design pattern;
-- JWT Claims-based authorization (custom policies where the token notably contains the Seniority of the user and the Organisation they are a part of).
+- JWT Claims-based authorization (custom policies where the token notably contains the Seniority of the user and the Organisation they are a part of)
+The console application is also _de jure_ an ASP.NET Core application (in the sense that it has a `host`) but with no controllers. It is responsible for consuming messages from the Azure Service Bus queue and constructing emails from them and sending the emails.
 
 Also use:
 - PostgreSQL DB
 - Redis cache
-- InMemory DB for testing
+- Azure Service Bus
 
-### Architecture
-No front end clients have been created; this appears on the diagram just for completeness. Everything else is made.
-![alt text](images/architecture-diagram.png)
-
-### Improvements
-The API is not stateless in its current form. This is because it keeps a queue (implemented as a `BackgroundService`) on to which email sending jobs are pushed. To make this stateless, we would aim to use a proper message queue flow, say:
-  1. Write the email to the DB;
-  2. Queue a message to the message queue, passing an instruction to send an email and giving a reference to the saved resource;
-  3. Consume the messages somewhere (Console application, Azure Function) and execute the email jobs there.
+### Notes
+In integration testing (with `WebApplicationFactory`) I have used https://github.com/Zaid-Ajaj/ThrowawayDb (credit: https://github.com/Zaid-Ajaj) to mock Postgres dbs. 
+The great approach of using the `Microsoft.EntityFrameworkCore.InMemory` package could not work here, as some models have a `jsonb` field and the in-memory adapter does not support this (whereas the Postgres one does).
