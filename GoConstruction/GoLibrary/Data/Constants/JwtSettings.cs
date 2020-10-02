@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GoApi.Data.Constants
+namespace GoLibrary.Data.Constants
 {
     /// <summary>
     /// Binded from configuration at startup.

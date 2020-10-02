@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GoApi.Data.Constants
+namespace GoLibrary.Data.Constants
 {
     public class PgSqlSettings
     {

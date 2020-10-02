@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using GoApi.Profiles;
 using Microsoft.Azure.ServiceBus;
+using GoLibrary.Data.Constants;
 
 namespace GoApi.Installers
 {
