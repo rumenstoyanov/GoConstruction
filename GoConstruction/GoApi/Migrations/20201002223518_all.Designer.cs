@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GoApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20200930210715_all")]
+    [Migration("20201002223518_all")]
     partial class all
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
