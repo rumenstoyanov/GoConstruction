@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30225.117
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoApp.Console", "GoApp.Console\GoApp.Console.csproj", "{F2AB05B3-1325-46C0-B2BA-DD4842938A19}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoLibrary", "GoLibrary\GoLibrary.csproj", "{68A73C2E-952A-4777-A631-D6F8DF555BD7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Debug|x64.Build.0 = Debug|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Debug|x86.Build.0 = Debug|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Release|x64.ActiveCfg = Release|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Release|x64.Build.0 = Release|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Release|x86.ActiveCfg = Release|Any CPU
+		{F2AB05B3-1325-46C0-B2BA-DD4842938A19}.Release|x86.Build.0 = Release|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Debug|x64.Build.0 = Debug|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Debug|x86.Build.0 = Debug|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Release|x64.ActiveCfg = Release|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Release|x64.Build.0 = Release|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Release|x86.ActiveCfg = Release|Any CPU
+		{68A73C2E-952A-4777-A631-D6F8DF555BD7}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8043E565-32C2-460D-81C5-518FFE56C63D}
+	EndGlobalSection
+EndGlobal

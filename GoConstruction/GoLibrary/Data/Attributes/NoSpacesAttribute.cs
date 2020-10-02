@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace GoLibrary.Data.Attributes
+{
+    public class NoSpacesAttribute : ValidationAttribute
+    {
+        public override bool IsValid(object value)
+        {
+            if (value != null)
+            {
+                return Regex.IsMatch(value.ToString(), @"^[a-zA-Z0-9]*$", RegexOptions.IgnoreCase);
+            }
+            return false;
+        }
+    }
+}
