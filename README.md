@@ -24,6 +24,10 @@ Also use:
 - Redis cache
 - InMemory DB for testing
 
+### Architecture
+No front end clients have been created; this appears on the diagram just for completeness. Everything else is made.
+![alt text](images/architecture-diagram.png)
+
 ### Improvements
 The API is not stateless in its current form. This is because it keeps a queue (implemented as a `BackgroundService`) on to which email sending jobs are pushed. To make this stateless, we would aim to use a proper message queue flow, say:
   1. Write the email to the DB;
