@@ -17,15 +17,16 @@ GoAPI is the back-end for a hypothetical issue (ticket) tracking software applic
 - Updates for a resource can be retrieved: giving an audit trail.
 
 ### Dev Stack/Technology Used
-The API is an ASP.NET Core WebAPI project:
+API is an ASP.NET Core WebAPI project:
 - Aims to follow REST semantics as closely as possible (e.g. returning _201 Created_ when a new DB entry is created following a _POST_ request);
 - EF Core ORM;
 - Swagger for docs;
 - Service design pattern;
-- JWT Claims-based authorization (custom policies where the token notably contains the Seniority of the user and the Organisation they are a part of)
-The console application is also _de jure_ an ASP.NET Core application (in the sense that it has a `host`) but with no controllers. It is responsible for consuming messages from the Azure Service Bus queue and constructing emails from them and sending the emails.
+- JWT Claims-based authorization (custom policies where the token notably contains the Seniority of the user and the Organisation they are a part of);
+- `Microsoft.Azure.ServiceBus` package to publish messages to a message queue. The messages contain the contents of emails, which are to be sent when updates occur to relevant users.
 
-Also use:
+Console application is also _de jure_ an ASP.NET Core application (in the sense that it has a `host`) but with no controllers. It is responsible for consuming messages from the Azure Service Bus queue and constructing emails from them and sending the emails.
+
 - PostgreSQL DB
 - Redis cache
 - Azure Service Bus
