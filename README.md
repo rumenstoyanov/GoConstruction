@@ -6,9 +6,12 @@
 GoAPI is the back-end for a hypothetical issue (ticket) tracking software application. Context is the construction industry. Key features are:
 
 - Organisations can sign up and register users at 4 different levels of authority (Worker, Supervisor, Manager, Contractor), each one having different permissions for CRUD operations in various parts of the application.
+![alt text](images/invite-supervisor.png)
 - Users can create **Sites**: objects that encapsulate large sets of issues.
 - Users can create **Jobs**: the units in which issues are specified. A **Job** belongs to a **Site**. A **Job** has a deadline, assignees, comments and tagging of users in the comments. A **Job** may be a child of another **Job**, or sit directly under the enveloping **Site**.
 - Relevant users are emailed when updates occur e.g. when an assignee is added or removed from a **Job**, or when some of the data of a resource changes (say **Job** description updated), or when they are mentioned in a comment, etc.
+![alt text](images/update-job-title.png)
+![alt text](images/add-assignee.png)
 - Updates for a resource can be retrieved: giving an audit trail.
 
 ### Dev Stack/Technology Used
