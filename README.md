@@ -34,4 +34,4 @@ GoAPI is the back-end for a hypothetical issue (ticket) tracking software applic
 ### Notes
 - In integration [testing](GoConstruction/GoApi.Tests) (with `WebApplicationFactory`) I have used https://github.com/Zaid-Ajaj/ThrowawayDb (credit: https://github.com/Zaid-Ajaj) to mock Postgres dbs. 
 The great approach of using the `Microsoft.EntityFrameworkCore.InMemory` package could not work here, as some models have a `jsonb` field and the in-memory adapter does not support this (whereas the Postgres one does).
-- Data Transfer Objects are use extensively, they are stored in the [Class Library Project](GoConstruction/GoLibrary) which is shared between the [AP](GoConstruction/GoApi) and [Console App](GoConstruction/GoApp.Console).
+- Data Transfer Objects are use extensively, they are stored in the [Class Library Project](GoConstruction/GoLibrary) which is shared between the [API](GoConstruction/GoApi) and [Console App](GoConstruction/GoApp.Console).
