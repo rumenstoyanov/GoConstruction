@@ -17,7 +17,7 @@ GoAPI is the back-end for a hypothetical issue (ticket) tracking software applic
 - Updates for a resource can be retrieved: giving an audit trail.
 
 ### Dev Stack/Technology Used
-API is an ASP.NET Core WebAPI project:
+[API](GoConstruction/GoApi) is an ASP.NET Core WebAPI project:
 - Aims to follow REST semantics as closely as possible (e.g. returning _201 Created_ when a new DB entry is created following a _POST_ request);
 - EF Core ORM;
 - Swagger for docs;
@@ -25,12 +25,13 @@ API is an ASP.NET Core WebAPI project:
 - JWT Claims-based authorization (custom policies where the token notably contains the Seniority of the user and the Organisation they are a part of);
 - `Microsoft.Azure.ServiceBus` package to publish messages to a message queue. The messages contain the contents of emails, which are to be sent when updates occur to relevant users.
 
-Console application is also _de jure_ an ASP.NET Core application (in the sense that it has a `host`) but with no controllers. It is responsible for consuming messages from the Azure Service Bus queue and constructing emails from them and sending the emails.
+[Console application](GoConstruction/GoApp.Console) is also _de jure_ an ASP.NET Core application (in the sense that it has a `host`) but with no controllers. It is responsible for consuming messages from the Azure Service Bus queue and constructing emails from them and sending the emails.
 
 - PostgreSQL DB
 - Redis cache
 - Azure Service Bus
 
 ### Notes
-In integration testing (with `WebApplicationFactory`) I have used https://github.com/Zaid-Ajaj/ThrowawayDb (credit: https://github.com/Zaid-Ajaj) to mock Postgres dbs. 
+- In integration [testing](GoConstruction/GoApi.Tests) (with `WebApplicationFactory`) I have used https://github.com/Zaid-Ajaj/ThrowawayDb (credit: https://github.com/Zaid-Ajaj) to mock Postgres dbs. 
 The great approach of using the `Microsoft.EntityFrameworkCore.InMemory` package could not work here, as some models have a `jsonb` field and the in-memory adapter does not support this (whereas the Postgres one does).
+- Data Transfer Objects are use extensively, they are stored in the [Class Library Project](GoConstruction/GoLibrary) which is shared between the [AP](GoConstruction/GoApi) and [Console App](GoConstruction/GoApp.Console).
