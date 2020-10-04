@@ -14,6 +14,7 @@ GoAPI is the back-end for a hypothetical issue (ticket) tracking software applic
 - Relevant users are emailed when updates occur e.g. when an assignee is added or removed from a **Job**, or when some of the data of a resource changes (say **Job** description updated), or when they are mentioned in a comment, etc.
 ![alt text](images/update-job-title.png)
 ![alt text](images/add-assignee.png)
+Updates are assembled using the [update service](GoConstruction/GoApi/Services/Implementations/UpdateService.cs)
 - Updates for a resource can be retrieved: giving an audit trail.
 
 ### Dev Stack/Technology Used
