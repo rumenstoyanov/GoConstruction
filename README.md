@@ -18,7 +18,7 @@ GoAPI is the back-end for a hypothetical issue (ticket) tracking software applic
 
 ### Dev Stack/Technology Used
 [API](GoConstruction/GoApi) is an ASP.NET Core WebAPI project:
-- Aims to follow REST semantics as closely as possible (e.g. returning _201 Created_ when a new DB entry is created following a _POST_ request);
+- Aims to follow REST semantics as closely as possible (e.g. returning _201 Created_ when a new DB entry is created following a _POST_ request). Sample endpoint: https://github.com/rumenstoyanov/GoConstruction/blob/29bc632b59722d1496f74356e133d14503a71d5e/GoConstruction/GoApi/Controllers/JobsController.cs#L155
 - EF Core ORM;
 - Swagger for docs;
 - Service design pattern;
