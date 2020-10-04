@@ -29,7 +29,7 @@ GoAPI is the back-end for a hypothetical issue (ticket) tracking software applic
 [Console application](GoConstruction/GoApp.Console) is also _de jure_ an ASP.NET Core application (in the sense that it has a `host`) but with no controllers. It is responsible for consuming messages from the Azure Service Bus queue and constructing emails from them and sending the emails.
 
 - PostgreSQL DB
-- Redis cache
+- Redis cache (configure threads: https://github.com/rumenstoyanov/GoConstruction/blob/66130c2c4eec7e5aadeee69cc6a972cbb7dcba6f/GoConstruction/GoApi/Startup.cs#L202)
 - Azure Service Bus
 
 ### Notes
